@@ -1,0 +1,59 @@
+{
+  "name": "@atlas/atlaskit-editor",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/atlas-atlaskit-editor.js",
+  "module": "./dist/atlas-atlaskit-editor.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/atlas-atlaskit-editor.js"
+    },
+    "./web-component": {
+      "types": "./dist/web-component.d.ts",
+      "import": "./dist/atlas-atlaskit-editor.js"
+    }
+  },
+  "scripts": {
+    "build": "vite build && tsc -p tsconfig.types.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@atlaskit/adf-schema": "52.7.0",
+    "@atlaskit/editor-common": "114.18.2",
+    "@atlaskit/editor-core": "219.2.0",
+    "@atlaskit/editor-json-transformer": "8.31.0",
+    "@atlaskit/editor-performance-metrics": "2.1.0",
+    "@atlaskit/editor-plugin-connectivity": "10.0.0",
+    "@atlaskit/editor-plugin-user-preferences": "8.0.0",
+    "@atlaskit/editor-prosemirror": "7.3.0",
+    "@atlaskit/editor-ssr-renderer": "5.1.0",
+    "@atlaskit/emoji": "70.2.0",
+    "@atlaskit/link-provider": "4.3.0",
+    "@atlaskit/media-core": "37.0.0",
+    "@atlaskit/mention": "25.0.0",
+    "@atlaskit/renderer": "^121.3.1",
+    "@atlaskit/tokens": "13.0.0",
+    "lodash.debounce": "^4.0.8",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-intl": "^5.25.1",
+    "react-intl-next": "npm:react-intl@^5.25.1",
+    "react-transition-group": "^4.4.5",
+    "uuid-validate": "^0.0.3"
+  },
+  "devDependencies": {
+    "@types/lodash.debounce": "^4.0.9",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.4.1",
+    "vite": "^6.3.5",
+    "vite-plugin-dts": "^4.5.3"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "name": "@atlas/atlaskit-navigation",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/atlas-atlaskit-navigation.js",
+  "module": "./dist/atlas-atlaskit-navigation.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/atlas-atlaskit-navigation.js"
+    },
+    "./web-component": {
+      "types": "./dist/web-component.d.ts",
+      "import": "./dist/atlas-atlaskit-navigation.js"
+    }
+  },
+  "scripts": {
+    "build": "vite build && tsc -p tsconfig.types.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@atlaskit/dropdown-menu": "16.8.0",
+    "@atlaskit/side-navigation": "11.2.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.4.1",
+    "typescript": "~5.5.4",
+    "vite": "^6.3.5",
+    "vite-plugin-dts": "^4.5.3"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

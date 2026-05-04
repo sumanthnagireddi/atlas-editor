@@ -1,0 +1,285 @@
+.atlas-editor {
+  min-height: 520px;
+  color: var(--atlas-editor-fg, #172b4d);
+  background: var(--atlas-editor-bg, #ffffff);
+  font-family: var(
+    --atlas-editor-font,
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif
+  );
+  font-size: 14px;
+  line-height: 1.4286;
+}
+
+.atlas-editor .akEditor {
+  border-radius: 0;
+  background: transparent;
+}
+
+.atlas-editor .akEditor {
+  border-radius: 3px;
+}
+
+.atlas-editor [data-testid='ak-editor-main-toolbar'] {
+  position: sticky;
+  top: 64px;
+  z-index: 20;
+  margin: 0;
+  padding: 6px 0;
+  border-top: 1px solid #dfe1e6;
+  border-bottom: 1px solid #dfe1e6;
+  background: #ffffff;
+}
+
+.atlas-editor [data-testid='ak-editor-main-toolbar'] [data-toolbar-type='primary'] {
+  min-height: 44px;
+}
+
+.atlas-editor [data-testid='ak-editor-main-toolbar'] button {
+  border-radius: 4px;
+}
+
+.atlas-editor .ProseMirror,
+.atlas-editor [contenteditable='true'],
+.atlas-editor .akEditor,
+.atlas-renderer {
+  font-family: var(
+    --atlas-editor-font,
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif
+  );
+  color: var(--atlas-editor-fg, #172b4d);
+}
+
+.atlas-editor .ProseMirror h1,
+.atlas-renderer h1 {
+  font-size: 1.714em;
+  line-height: 1.1667;
+}
+
+.atlas-editor .ProseMirror h2,
+.atlas-renderer h2 {
+  font-size: 1.428em;
+  line-height: 1.2;
+}
+
+.atlas-editor .ProseMirror h3,
+.atlas-renderer h3 {
+  font-size: 1.142em;
+  line-height: 1.25;
+}
+
+.atlas-editor .ProseMirror,
+.atlas-renderer {
+  font-size: 20px;
+  line-height: 1.55;
+}
+
+.atlas-editor .ProseMirror {
+  padding-top: 0;
+}
+
+.atlas-editor .ProseMirror > * {
+  max-width: 760px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.atlas-editor .ProseMirror > ul,
+.atlas-editor .ProseMirror > ol,
+.atlas-editor .ProseMirror > blockquote,
+.atlas-editor .ProseMirror > pre,
+.atlas-editor .ProseMirror > table,
+.atlas-editor .ProseMirror > .code-block,
+.atlas-renderer > ul,
+.atlas-renderer > ol,
+.atlas-renderer > blockquote,
+.atlas-renderer > pre,
+.atlas-renderer > figure,
+.atlas-renderer > .atlas-renderer-table-wrap {
+  max-width: 760px;
+}
+
+.atlas-editor .ProseMirror p,
+.atlas-renderer p {
+  margin: 0.38em 0;
+}
+
+.atlas-editor .ProseMirror ul,
+.atlas-editor .ProseMirror ol,
+.atlas-renderer ul,
+.atlas-renderer ol {
+  margin: 0.35em 0 0.35em 1.18em;
+  padding-left: 1em;
+}
+
+.atlas-editor .ProseMirror li,
+.atlas-renderer li {
+  margin: 0.28em 0;
+  padding-left: 0.22em;
+}
+
+.atlas-editor .ProseMirror li > p,
+.atlas-renderer li > p {
+  margin: 0;
+}
+
+.atlas-renderer strong,
+.atlas-editor .ProseMirror strong {
+  color: #091e42;
+  font-weight: 700;
+}
+
+.atlas-inline-code,
+.atlas-editor .ProseMirror code {
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: #f1f2f4;
+  color: #172b4d;
+  font-family: "SFMono-Regular", "SF Mono", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 0.86em;
+}
+
+.atlas-editor button,
+.atlas-editor [role='button'] {
+  border-radius: 3px;
+}
+
+.atlas-editor [aria-label*='Insert'],
+.atlas-editor [aria-label*='insert'],
+.atlas-editor [aria-label*='Add'],
+.atlas-editor [aria-label*='add'],
+.atlas-editor [data-testid*='quick-insert'],
+.atlas-editor [data-testid*='block-control'],
+.atlas-editor [data-testid*='block-controls'] {
+  border-radius: 3px;
+  color: #44546f;
+}
+
+.atlas-editor [aria-label*='Insert']:hover,
+.atlas-editor [aria-label*='insert']:hover,
+.atlas-editor [aria-label*='Add']:hover,
+.atlas-editor [aria-label*='add']:hover,
+.atlas-editor [data-testid*='quick-insert']:hover,
+.atlas-editor [data-testid*='block-control']:hover,
+.atlas-editor [data-testid*='block-controls']:hover {
+  background: #f1f2f4;
+  color: #172b4d;
+}
+
+.atlas-editor--dark {
+  --atlas-editor-bg: #101214;
+  --atlas-editor-fg: #f4f5f7;
+  color-scheme: dark;
+}
+
+.atlas-editor--dark [data-testid='renderer-container'],
+.atlas-editor--dark .akEditor {
+  background: #101214;
+  color: #f4f5f7;
+}
+
+.atlas-editor-element-root {
+  display: block;
+  min-height: 520px;
+}
+
+.atlas-renderer {
+  padding: 0;
+  line-height: 1.55;
+}
+
+.atlas-editor .ProseMirror pre,
+.atlas-renderer pre {
+  overflow: auto;
+  box-sizing: border-box;
+  margin: 18px 0;
+  padding: 18px 22px;
+  border: 1px solid #d9e1ea;
+  border-radius: 10px;
+  background: #f7f9fc;
+  box-shadow: inset 0 1px 0 rgba(9, 30, 66, 0.02);
+  color: #172b4d;
+  font-family: var(
+    --atlas-editor-code-font,
+    "SFMono-Regular",
+    "SF Mono",
+    Consolas,
+    "Liberation Mono",
+    Menlo,
+    Courier,
+    monospace
+  );
+  font-size: 14px;
+  line-height: 1.8;
+  tab-size: 2;
+}
+
+.atlas-editor .ProseMirror pre code,
+.atlas-renderer pre code {
+  font: inherit;
+  white-space: pre;
+  background: transparent;
+  padding: 0;
+}
+
+.atlas-renderer-code-block {
+  margin: 16px 0;
+}
+
+.atlas-renderer-code-block figcaption {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin: 0 0 -1px;
+  padding: 0 10px;
+  border: 1px solid #d9e1ea;
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  background: #eef2f7;
+  color: #5e6c84;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.atlas-editor--dark [aria-label*='Insert']:hover,
+.atlas-editor--dark [aria-label*='insert']:hover,
+.atlas-editor--dark [aria-label*='Add']:hover,
+.atlas-editor--dark [aria-label*='add']:hover,
+.atlas-editor--dark [data-testid*='quick-insert']:hover,
+.atlas-editor--dark [data-testid*='block-control']:hover,
+.atlas-editor--dark [data-testid*='block-controls']:hover {
+  background: #22272b;
+  color: #f4f5f7;
+}
+
+.atlas-editor--dark .ProseMirror pre,
+.atlas-editor--dark .atlas-renderer pre {
+  border-color: #38414a;
+  background: #161a1d;
+  color: #dcdfe4;
+}
+
+.atlas-editor--dark [data-testid='ak-editor-main-toolbar'] {
+  border-color: #38414a;
+  background: #101214;
+}
+
+.atlas-editor--dark .atlas-renderer-code-block figcaption {
+  border-color: #38414a;
+  background: #22272b;
+  color: #9fadbc;
+}

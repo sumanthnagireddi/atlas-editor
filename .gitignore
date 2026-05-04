@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.angular/
+.vscode/
+*.log
+*.err
+confluence-shell-check*.png
+package-lock.backup.json

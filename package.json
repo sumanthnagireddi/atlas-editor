@@ -1,0 +1,57 @@
+{
+  "name": "atlas-editor-workspace",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Angular application hosting a React Atlaskit editor through a production custom element boundary.",
+  "workspaces": [
+    "apps/angular-shell",
+    "packages/atlaskit-editor",
+    "packages/atlaskit-navigation"
+  ],
+  "scripts": {
+    "start": "npm run start -w apps/angular-shell",
+    "build": "npm run build:navigation && npm run build:editor && npm run build:angular && npm run build:bundle",
+    "build:angular": "npm run build -w apps/angular-shell",
+    "build:navigation": "npm run build -w packages/atlaskit-navigation",
+    "build:editor": "npm run build -w packages/atlaskit-editor",
+    "build:bundle": "node ./scripts/build-web-components.mjs",
+    "typecheck": "npm run typecheck -w packages/atlaskit-navigation && npm run typecheck -w packages/atlaskit-editor && npm run build:navigation && npm run build:editor && npm run typecheck -w apps/angular-shell",
+    "lint": "npm run lint -w apps/angular-shell"
+  },
+  "engines": {
+    "node": ">=20.19.0",
+    "npm": ">=10.0.0"
+  },
+  "overrides": {
+    "relay-runtime": "20.1.1"
+  },
+  "devDependencies": {
+    "@angular/compiler-cli": "18.2.14",
+    "@types/lodash": "^4.17.20",
+    "@typescript-eslint/eslint-plugin": "^8.32.0",
+    "@typescript-eslint/parser": "^8.32.0",
+    "eslint": "^9.26.0",
+    "typescript": "~5.5.4"
+  },
+  "dependencies": {
+    "@angular/animations": "18.2.14",
+    "@angular/common": "18.2.14",
+    "@angular/compiler": "18.2.14",
+    "@angular/core": "18.2.14",
+    "@angular/forms": "18.2.14",
+    "@angular/platform-browser": "18.2.14",
+    "@angular/router": "18.2.14",
+    "ajv": "^8.17.1",
+    "caniuse-lite": "^1.0.30001791",
+    "cliui": "^8.0.1",
+    "escalade": "^3.2.0",
+    "get-caller-file": "^2.0.5",
+    "require-directory": "^2.1.1",
+    "rxjs": "^7.8.2",
+    "string-width": "^4.2.3",
+    "tslib": "2.8.1",
+    "y18n": "^5.0.8",
+    "yargs-parser": "^21.1.1",
+    "zone.js": "0.15.1"
+  }
+}
