@@ -28,9 +28,10 @@ type AtlaskitEditorElementContract = HTMLElement & {
   mode: EditorMode;
   darkMode: boolean;
   debounceMs: number;
+  placeholder: string;
 };
 
-const EDITOR_ASSET_VERSION = '2026-05-04-7';
+const EDITOR_ASSET_VERSION = '2026-05-05-1';
 
 @Component({
   selector: 'app-atlaskit-editor-host',
@@ -43,7 +44,8 @@ const EDITOR_ASSET_VERSION = '2026-05-04-7';
       [attr.mode]="mode"
       [attr.read-only]="readOnly ? '' : null"
       [attr.dark-mode]="darkMode ? '' : null"
-      [attr.debounce-ms]="debounceMs">
+      [attr.debounce-ms]="debounceMs"
+      [attr.placeholder]="placeholder">
     </atlas-editor>
   `,
   styles: [
@@ -66,6 +68,7 @@ export class AtlaskitEditorHostComponent implements AfterViewInit, OnChanges, On
   @Input() mode: EditorMode = 'editor';
   @Input() darkMode = false;
   @Input() debounceMs = 250;
+  @Input() placeholder = 'Start writing...';
 
   @Output() readonly valueChange = new EventEmitter<ADFDoc>();
   @Output('change') readonly changeEvent = new EventEmitter<ADFDoc>();
@@ -146,6 +149,7 @@ export class AtlaskitEditorHostComponent implements AfterViewInit, OnChanges, On
     editor.mode = this.mode;
     editor.darkMode = this.darkMode;
     editor.debounceMs = this.debounceMs;
+    editor.placeholder = this.placeholder;
   }
 }
 
@@ -175,7 +179,7 @@ function ensureBrowserProcessShim(): void {
 }
 
 function ensureEditorStylesheet(): void {
-  const href = '/assets/atlaskit-editor/atlas-atlaskit-editor.css';
+  const href = `/assets/atlaskit-editor/atlas-atlaskit-editor.css?v=${EDITOR_ASSET_VERSION}`;
 
   if (document.querySelector(`link[href="${href}"]`)) {
     return;

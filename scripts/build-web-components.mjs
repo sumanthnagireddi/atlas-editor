@@ -9,15 +9,9 @@ const outputDir = path.join(rootDir, 'dist', 'web-components');
 await rm(outputDir, { recursive: true, force: true });
 await mkdir(outputDir, { recursive: true });
 
-await cp(path.join(rootDir, 'packages', 'atlaskit-editor', 'dist'), path.join(outputDir, 'atlaskit-editor'), {
+await cp(path.join(rootDir, 'packages', 'atlaskit-editor', 'build'), path.join(outputDir, 'atlaskit-editor'), {
   recursive: true
 });
-
-await cp(
-  path.join(rootDir, 'packages', 'atlaskit-navigation', 'dist'),
-  path.join(outputDir, 'atlaskit-navigation'),
-  { recursive: true }
-);
 
 const loaderSource = `const baseUrl = new URL('.', import.meta.url);
 
@@ -35,15 +29,10 @@ function ensureStylesheet(relativePath) {
 
 async function registerAtlasElements() {
   ensureStylesheet('./atlaskit-editor/atlas-atlaskit-editor.css');
-  ensureStylesheet('./atlaskit-navigation/atlaskit-navigation.css');
 
-  const [{ defineAtlaskitEditorElement }, { defineAtlaskitNavigationElement }] = await Promise.all([
-    import(new URL('./atlaskit-editor/atlas-atlaskit-editor.js', baseUrl).href),
-    import(new URL('./atlaskit-navigation/atlas-atlaskit-navigation.js', baseUrl).href)
-  ]);
+  const { defineAtlaskitEditorElement } = await import(new URL('./atlaskit-editor/atlas-atlaskit-editor.js', baseUrl).href);
 
   defineAtlaskitEditorElement('atlas-editor');
-  defineAtlaskitNavigationElement('atlas-sidebar');
 }
 
 registerAtlasElements();

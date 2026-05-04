@@ -5,17 +5,15 @@
   "description": "Angular application hosting a React Atlaskit editor through a production custom element boundary.",
   "workspaces": [
     "apps/angular-shell",
-    "packages/atlaskit-editor",
-    "packages/atlaskit-navigation"
+    "packages/atlaskit-editor"
   ],
   "scripts": {
     "start": "npm run start -w apps/angular-shell",
-    "build": "npm run build:navigation && npm run build:editor && npm run build:angular && npm run build:bundle",
+    "build": "npm run build:editor && npm run build:angular && npm run build:bundle",
     "build:angular": "npm run build -w apps/angular-shell",
-    "build:navigation": "npm run build -w packages/atlaskit-navigation",
     "build:editor": "npm run build -w packages/atlaskit-editor",
     "build:bundle": "node ./scripts/build-web-components.mjs",
-    "typecheck": "npm run typecheck -w packages/atlaskit-navigation && npm run typecheck -w packages/atlaskit-editor && npm run build:navigation && npm run build:editor && npm run typecheck -w apps/angular-shell",
+    "typecheck": "npm run typecheck -w packages/atlaskit-editor && npm run build:editor && npm run typecheck -w apps/angular-shell",
     "lint": "npm run lint -w apps/angular-shell"
   },
   "engines": {

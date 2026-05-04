@@ -5,7 +5,14 @@ import { JSONTransformer } from '@atlaskit/editor-json-transformer';
 import type { EditorView } from '@atlaskit/editor-prosemirror/view';
 import { normalizeADF, stableADFString } from './adf';
 import { AtlaskitRenderer } from './AtlaskitRenderer';
-import { createEmojiProvider, createMentionProvider, createMockMediaProvider } from './providers';
+import {
+  createAnnotationProviders,
+  createCardProvider,
+  createEmojiProvider,
+  createMentionProvider,
+  createMockMediaProvider,
+  createTaskDecisionProvider
+} from './providers';
 import type { ADFDoc, AtlaskitEditorProps } from './types';
 import './styles.css';
 
@@ -58,6 +65,9 @@ const EditorSurface = memo(function EditorSurface({
   const mentionProvider = useMemo(() => createMentionProvider(), []);
   const emojiProvider = useMemo(() => createEmojiProvider(), []);
   const mediaProvider = useMemo(() => createMockMediaProvider(), []);
+  const taskDecisionProvider = useMemo(() => createTaskDecisionProvider(), []);
+  const annotationProviders = useMemo(() => createAnnotationProviders(), []);
+  const cardProvider = useMemo(() => createCardProvider(), []);
   const initialPluginConfiguration = useMemo(
     () =>
       ({
@@ -72,6 +82,9 @@ const EditorSurface = memo(function EditorSurface({
         },
         insertBlockPlugin: {
           toolbarShowPlusInsertOnly: false
+        },
+        quickInsertPlugin: {
+          enableElementBrowser: true
         },
         toolbarPlugin: {
           contextualFormattingEnabled: 'always-pinned',
@@ -135,8 +148,11 @@ const EditorSurface = memo(function EditorSurface({
         <Editor
           appearance="full-page"
           allowAnalyticsGASV3={false}
+          allowBorderMark
           allowBreakout
+          allowConfluenceInlineComment
           allowTextColor
+          allowTextAlignment
           allowTables={{
             advanced: true,
             allowColumnResizing: true,
@@ -149,27 +165,47 @@ const EditorSurface = memo(function EditorSurface({
           allowPanel
           allowStatus
           allowDate
+          allowNestedTasks
           allowTasksAndDecisions
           allowLayouts
           allowExtension
           allowExpand
+          allowFragmentMark
           allowIndentation
           allowTemplatePlaceholders
           allowFindReplace
           allowHelpDialog
           allowUndoRedoButtons
+          autoScrollIntoView
           codeBlock={{ allowCopyToClipboard: true, allowCompositionInputOverride: true }}
-          elementBrowser={{ showModal: true, replacePlusMenu: false }}
+          elementBrowser={{ showModal: true, replacePlusMenu: true }}
           initialPluginConfiguration={initialPluginConfiguration}
+          maxContentSize={50000}
           placeholder={placeholder}
           quickInsert={{ disableDefaultItems: false }}
+          saveOnEnter
+          shouldFocus
+          showIndentationButtons
+          linking={{
+            smartLinks: {
+              allowBlockCards: true,
+              allowDatasource: true,
+              allowEmbeds: true,
+              allowResizing: true,
+              allowWrapping: true,
+              provider: cardProvider as never
+            }
+          }}
           defaultValue={value}
           skipValidation
+          textFormatting={{}}
           useStickyToolbar
+          annotationProviders={annotationProviders}
           contentTransformerProvider={() => transformer as never}
           mentionProvider={mentionProvider}
           emojiProvider={emojiProvider as never}
           media={{ provider: mediaProvider as never, allowMediaSingle: true, allowMediaGroup: true, allowResizing: true }}
+          taskDecisionProvider={taskDecisionProvider}
           onEditorReady={(actions: EditorActions) => {
             editorActionsRef.current = actions;
             lastEmittedKeyRef.current = incomingValueKey;

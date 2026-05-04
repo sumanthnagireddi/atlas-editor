@@ -36,6 +36,11 @@ jobs:
       - name: Build workspace
         run: npm run build
 
+      - name: Copy web component bundle into Pages artifact
+        run: |
+          mkdir -p dist/angular-shell/browser/web-components
+          cp -R dist/web-components/. dist/angular-shell/browser/web-components/
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 

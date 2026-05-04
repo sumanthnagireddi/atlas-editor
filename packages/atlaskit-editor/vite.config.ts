@@ -18,6 +18,8 @@ export default defineConfig({
     })
   ],
   build: {
+    outDir: 'build',
+    emptyOutDir: true,
     lib: {
       entry: 'src/index.ts',
       name: 'AtlasAtlaskitEditor',

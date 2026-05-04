@@ -1,7 +1,5 @@
 import { Component, computed, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { AtlaskitEditorHostComponent } from './atlaskit-editor-host.component';
-import { AtlaskitNavigationHostComponent } from './atlaskit-navigation-host.component';
 
 type ADFDoc = {
   version: 1;
@@ -2274,108 +2272,68 @@ const INITIAL_DOCUMENT: ADFDoc = {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [FormsModule, AtlaskitEditorHostComponent, AtlaskitNavigationHostComponent],
-  template: `
-    <main class="confluence-shell" [class.confluence-shell-dark]="darkMode()">
-      <header class="global-header">
-        <div class="global-header-left">
-          <button class="grid-button" type="button" aria-label="Open apps">
-            <span></span><span></span><span></span><span></span>
-          </button>
-          <div class="global-brand">
-            <span class="global-brand-mark" aria-hidden="true">✦</span>
-            <strong>Confluence</strong>
+  imports: [AtlaskitEditorHostComponent],
+  template:     `
+    <main class="confluence-page" [class.confluence-page--dark]="darkMode()">
+      <aside class="confluence-rail" aria-label="Primary navigation">
+        <button class="rail-button rail-button--brand" type="button" aria-label="Confluence home">A</button>
+        <button class="rail-button" type="button" aria-label="Search">/</button>
+        <button class="rail-button" type="button" aria-label="Recent">R</button>
+      </aside>
+
+      <section class="confluence-shell">
+        <header class="confluence-topbar">
+          <div class="confluence-topbar__group">
+            <button class="topbar-pill" type="button">Editor core</button>
+            <button class="topbar-pill topbar-pill--active" type="button">Full page confluence</button>
+            <button class="topbar-pill" type="button" (click)="toggleDarkMode()">
+              {{ darkMode() ? 'Dark Theme' : 'Light Theme' }}
+            </button>
+            <button class="topbar-pill topbar-pill--accent" type="button">Manage Editor Features</button>
           </div>
-        </div>
 
-        <label class="global-search">
-          <span aria-hidden="true">⌕</span>
-          <input type="text" value="Search" readOnly aria-label="Search" />
-        </label>
-
-        <div class="global-header-right">
-          <button class="create-button" type="button">+ Create</button>
-          <button class="warning-button" type="button">Upgrade</button>
-          <button class="plain-icon-button" type="button" aria-label="Notifications">◌</button>
-          <button class="plain-icon-button" type="button" aria-label="Help">?</button>
-          <button class="plain-icon-button" type="button" aria-label="Settings">⚙</button>
-          <span class="header-avatar">S</span>
-        </div>
-      </header>
-
-      <div class="workspace-shell">
-        <aside class="sidebar-shell">
-          <app-atlaskit-navigation-host
-            [activeItem]="activeNavItem()"
-            (itemSelect)="onNavigationSelect($event)">
-          </app-atlaskit-navigation-host>
-        </aside>
-
-        <section class="page-shell">
-          <header class="page-topbar">
-            <div class="page-title-strip">
-              <button class="plain-icon-button" type="button" aria-label="Expand page menu">
-                <span aria-hidden="true">&#9662;</span>
+          <div class="confluence-topbar__group confluence-topbar__group--right">
+            <div class="mode-switch" role="tablist" aria-label="Editor mode">
+              <button
+                class="mode-switch__button"
+                type="button"
+                [class.mode-switch__button--active]="mode() === 'editor'"
+                (click)="setMode('editor')">
+                Write
               </button>
-              <span class="page-icon" aria-hidden="true">&#9635;</span>
-              <strong>{{ documentTitle }}</strong>
+              <button
+                class="mode-switch__button"
+                type="button"
+                [class.mode-switch__button--active]="mode() === 'renderer'"
+                (click)="setMode('renderer')">
+                Preview
+              </button>
             </div>
 
-            <div class="page-actions">
-              <span class="edited-date">Edited Dec 12, 2025</span>
-              <span class="avatar-stack" aria-label="Collaborators">
-                <span class="avatar">S</span>
-                <span class="avatar avatar-small">S</span>
-              </span>
-              <button class="primary-button" type="button">Update</button>
-              <button class="primary-button primary-button-caret" type="button" aria-label="More update actions">&#9662;</button>
-              <button class="plain-button" type="button" (click)="toggleMode()">Close</button>
-              <button class="share-button" type="button"><span aria-hidden="true">&#128274;</span> Share</button>
-              <button class="plain-icon-button" type="button" aria-label="Copy link">⌁</button>
-              <button class="plain-icon-button" type="button" aria-label="More page actions">...</button>
-            </div>
-          </header>
+            <button class="topbar-action" type="button" (click)="resetDocument()">
+              Reset
+            </button>
+            <button class="topbar-action topbar-action--primary" type="button">
+              Publish
+            </button>
+            <button class="topbar-close" type="button">Close</button>
+          </div>
+        </header>
 
-          <article class="document-stage">
-            <div class="editor-surface-header">
-              <div class="editor-surface-mode">
-                <button class="surface-tab" type="button" [class.surface-tab-active]="mode() === 'editor'" (click)="setMode('editor')">
-                  Write
-                </button>
-                <button class="surface-tab" type="button" [class.surface-tab-active]="mode() === 'renderer'" (click)="setMode('renderer')">
-                  Preview
-                </button>
-              </div>
-            </div>
-
-            <div class="document-page">
-              <h1 class="document-title">{{ documentTitle }}</h1>
-              <div class="document-meta">
-                <span class="author-avatar">S</span>
-                <span>By Sumanth</span>
-                <span class="meta-item"><span aria-hidden="true">&#128214;</span> 3 min</span>
-                <span class="meta-item"><span aria-hidden="true">&#128065;</span> See views</span>
-                <span class="meta-item"><span aria-hidden="true">&#9786;</span> Add a reaction</span>
-              </div>
-
-              <div class="editor-surface">
-                <div class="editor-mode-pill">{{ mode() === 'editor' ? 'EDIT MODE' : 'VIEW MODE' }}</div>
-                <app-atlaskit-editor-host
-                  [value]="editorData()"
-                  [readOnly]="readOnly()"
-                  [mode]="mode()"
-                  [darkMode]="darkMode()"
-                  [debounceMs]="200"
-                  (change)="onEditorChange($event)"
-                  (editorError)="onEditorError($event)">
-                </app-atlaskit-editor-host>
-              </div>
-            </div>
-          </article>
+        <section class="confluence-editor-stage">
+          <app-atlaskit-editor-host
+            class="confluence-editor-stage__host"
+            [value]="editorData()"
+            [readOnly]="readOnly()"
+            [mode]="mode()"
+            [darkMode]="darkMode()"
+            [debounceMs]="200"
+            [placeholder]="'Give this page a title...'"
+            (change)="onEditorChange($event)"
+            (editorError)="onEditorError($event)">
+          </app-atlaskit-editor-host>
         </section>
-      </div>
-
-      <button class="help-button" type="button" aria-label="Help">?</button>
+      </section>
     </main>
   `,
   styleUrl: './app.component.css'
@@ -2383,15 +2341,20 @@ const INITIAL_DOCUMENT: ADFDoc = {
 export class AppComponent {
   readonly documentTitle = 'How JavaScript code Executes and allocates Memory';
   readonly editorData = signal<ADFDoc>(createInitialDocument());
-  readonly activeNavItem = signal('page-current');
-  readonly darkMode = signal(false);
+  readonly darkMode = signal(true);
   readonly mode = signal<EditorMode>('editor');
-  readonly documentVersion = signal(1);
+  readonly lastUpdated = signal(new Date());
   readonly readOnly = computed(() => this.mode() === 'renderer');
+  readonly lastUpdatedLabel = computed(() =>
+    new Intl.DateTimeFormat('en-IN', {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    }).format(this.lastUpdated())
+  );
 
   readonly versionedDocument = computed<VersionedADFDocument>(() => ({
-    version: this.documentVersion(),
-    updatedAt: new Date().toISOString(),
+    version: 1,
+    updatedAt: this.lastUpdated().toISOString(),
     doc: this.editorData()
   }));
 
@@ -2399,42 +2362,32 @@ export class AppComponent {
 
   onEditorChange(nextDocument: ADFDoc): void {
     this.editorData.set(structuredClone(nextDocument));
-    this.documentVersion.update((version) => version + 1);
+    this.lastUpdated.set(new Date());
   }
 
   onEditorError(error: unknown): void {
     console.error('Unable to load Atlaskit editor bundle', error);
   }
 
-  onNavigationSelect(itemId: string): void {
-    this.activeNavItem.set(itemId);
-
-    if (itemId === 'preview-page') {
-      this.mode.set('renderer');
-      return;
-    }
-
-    if (itemId === 'page-current') {
-      this.mode.set('editor');
-    }
-  }
-
-  toggleMode(): void {
-    this.mode.update((mode) => (mode === 'editor' ? 'renderer' : 'editor'));
-  }
-
   setMode(mode: EditorMode): void {
     this.mode.set(mode);
-    this.activeNavItem.set('page-current');
+  }
+
+  toggleDarkMode(): void {
+    this.darkMode.update((value) => !value);
   }
 
   resetDocument(): void {
     this.editorData.set(createInitialDocument());
-    this.documentVersion.set(1);
     this.mode.set('editor');
+    this.lastUpdated.set(new Date());
   }
 }
 
 function createInitialDocument(): ADFDoc {
-  return structuredClone(INITIAL_DOCUMENT);
+  return {
+    version: 1,
+    type: 'doc',
+    content: []
+  } as ADFDoc;
 }

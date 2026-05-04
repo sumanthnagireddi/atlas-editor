@@ -8,7 +8,7 @@ const BOOLEAN_ATTRIBUTES = new Set(['read-only', 'dark-mode']);
 
 export class AtlaskitEditorElement extends HTMLElement {
   static get observedAttributes(): string[] {
-    return ['value', 'read-only', 'mode', 'dark-mode', 'debounce-ms'];
+    return ['value', 'read-only', 'mode', 'dark-mode', 'debounce-ms', 'placeholder'];
   }
 
   private root: Root | null = null;
@@ -18,6 +18,7 @@ export class AtlaskitEditorElement extends HTMLElement {
   private internalMode: EditorMode = 'editor';
   private internalDarkMode = false;
   private internalDebounceMs = 250;
+  private internalPlaceholder = 'Start writing...';
   private lastRenderKey = '';
   private renderQueued = false;
 
@@ -59,6 +60,11 @@ export class AtlaskitEditorElement extends HTMLElement {
 
     if (name === 'debounce-ms') {
       this.debounceMs = Number(newValue ?? 250);
+      return;
+    }
+
+    if (name === 'placeholder' && newValue !== null) {
+      this.placeholder = newValue;
     }
   }
 
@@ -108,6 +114,15 @@ export class AtlaskitEditorElement extends HTMLElement {
     this.queueRender();
   }
 
+  get placeholder(): string {
+    return this.internalPlaceholder;
+  }
+
+  set placeholder(nextValue: string) {
+    this.internalPlaceholder = typeof nextValue === 'string' && nextValue.trim().length > 0 ? nextValue : 'Start writing...';
+    this.queueRender();
+  }
+
   private handleChange = (doc: ADFDoc): void => {
     this.internalValue = normalizeADF(doc);
     this.dispatchEvent(
@@ -141,7 +156,8 @@ export class AtlaskitEditorElement extends HTMLElement {
       readOnly: this.internalReadOnly,
       mode: this.internalMode,
       darkMode: this.internalDarkMode,
-      debounceMs: this.internalDebounceMs
+      debounceMs: this.internalDebounceMs,
+      placeholder: this.internalPlaceholder
     });
 
     if (renderKey === this.lastRenderKey) {
@@ -156,6 +172,7 @@ export class AtlaskitEditorElement extends HTMLElement {
         mode={this.internalMode}
         darkMode={this.internalDarkMode}
         debounceMs={this.internalDebounceMs}
+        placeholder={this.internalPlaceholder}
         onChange={this.handleChange}
       />
     );

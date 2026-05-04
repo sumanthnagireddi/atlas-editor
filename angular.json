@@ -27,13 +27,8 @@
               },
               {
                 "glob": "**/*",
-                "input": "packages/atlaskit-editor/dist",
+                "input": "packages/atlaskit-editor/build",
                 "output": "assets/atlaskit-editor"
-              },
-              {
-                "glob": "**/*",
-                "input": "packages/atlaskit-navigation/dist",
-                "output": "assets/atlaskit-navigation"
               }
             ],
             "styles": [
