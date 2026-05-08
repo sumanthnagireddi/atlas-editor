@@ -60,6 +60,7 @@ const TITLE_ALIGNMENT_OPTIONS: Array<{ label: string; value: AtlasPageTitleAlign
   { value: 'right', label: 'Right' }
 ];
 
+// FIX 1: Added `showContextPanel` prop (default false, parent-controlled)
 export const AtlaskitEditor = memo(function AtlaskitEditor({
   value,
   onChange,
@@ -69,11 +70,12 @@ export const AtlaskitEditor = memo(function AtlaskitEditor({
   debounceMs = 250,
   placeholder = 'Start writing...',
   page = null,
+  showContextPanel = false, // NEW: parent-controlled, default false
   onPageChange,
   onPageSubmit,
   onPageCancel,
   onEditModeChange
-}: AtlaskitEditorProps) {
+}: AtlaskitEditorProps & { showContextPanel?: boolean }) {
   const normalizedValue = useMemo(() => normalizeADF(value), [value]);
   const normalizedPage = useMemo(() => normalizePage(page), [page]);
 
@@ -118,7 +120,6 @@ export const AtlaskitEditor = memo(function AtlaskitEditor({
           unbind?.();
           return;
         }
-
         unbindThemeListener = unbind;
       })
       .catch((error) => {
@@ -134,7 +135,6 @@ export const AtlaskitEditor = memo(function AtlaskitEditor({
       if (nextCount === 0) {
         delete body.dataset[countKey];
         body.classList.remove('atlas-editor-dark-portal');
-
         restoreThemeAttribute(html, 'data-theme', previousTheme.theme);
         restoreThemeAttribute(html, 'data-color-mode', previousTheme.colorMode);
         restoreThemeAttribute(html, 'data-contrast-mode', previousTheme.contrastMode);
@@ -156,6 +156,7 @@ export const AtlaskitEditor = memo(function AtlaskitEditor({
         darkMode={darkMode}
         debounceMs={debounceMs}
         placeholder={placeholder}
+        showContextPanel={showContextPanel} // FIX 1: pass through
         onPageChange={onPageChange}
         onPageSubmit={onPageSubmit}
         onPageCancel={onPageCancel}
@@ -188,6 +189,7 @@ const PageEditorShell = memo(function PageEditorShell({
   darkMode,
   debounceMs,
   placeholder,
+  showContextPanel, // FIX 1: receive from parent
   onPageChange,
   onPageSubmit,
   onPageCancel,
@@ -197,6 +199,7 @@ const PageEditorShell = memo(function PageEditorShell({
   page: AtlasEditorPage;
   readOnly: boolean;
   mode: 'editor' | 'renderer';
+  showContextPanel: boolean; // FIX 1
   onPageChange?: (page: AtlasEditorPage) => void;
   onPageSubmit?: (payload: AtlasEditorSubmission) => void;
   onPageCancel?: (payload: AtlasEditorSubmission) => void;
@@ -330,10 +333,7 @@ const PageEditorShell = memo(function PageEditorShell({
   );
 
   const handleStartEdit = useCallback(() => {
-    if (readOnly) {
-      return;
-    }
-
+    if (readOnly) return;
     setDraftValue(committedValue);
     setDraftPage(committedPage);
     setIsEditing(true);
@@ -349,10 +349,7 @@ const PageEditorShell = memo(function PageEditorShell({
     setDraftValue(nextValue);
     setDraftPage(nextPage);
     setIsEditing(false);
-    onPageSubmit?.({
-      page: nextPage,
-      value: nextValue
-    });
+    onPageSubmit?.({ page: nextPage, value: nextValue });
     finishBusyState();
   }, [draftPage, draftValue, onPageSubmit, startBusyState]);
 
@@ -361,31 +358,41 @@ const PageEditorShell = memo(function PageEditorShell({
     setDraftValue(committedValue);
     setDraftPage(committedPage);
     setIsEditing(false);
-    onPageCancel?.({
-      page: committedPage,
-      value: committedValue
-    });
+    onPageCancel?.({ page: committedPage, value: committedValue });
     finishBusyState();
   }, [committedPage, committedValue, onPageCancel, startBusyState]);
 
   const displayPage = isEditing ? draftPage : committedPage;
+
+  // FIX 2: Proper dark mode class — use Atlaskit design token naming
   const surfaceDarkClass = darkMode ? 'atlas-editor atlas-editor--dark' : 'atlas-editor';
+
   const widthMode = displayPage.widthMode ?? 'centered';
+
+  // FIX 3: Title alignment defaults to 'left' always (no prop default to center)
   const titleAlignment = displayPage.titleAlignment ?? 'left';
+
   const topbarUpdatedLabel = getTopbarUpdatedLabel(isEditing, displayPage.updatedText);
-  const rootClassName = `${surfaceDarkClass} atlas-page-shell atlas-page-shell--${widthMode}${isEditing ? ' atlas-page-shell--editing' : ''}`;
+
+  const rootClassName = [
+    surfaceDarkClass,
+    'atlas-page-shell',
+    `atlas-page-shell--${widthMode}`,
+    isEditing ? 'atlas-page-shell--editing' : ''
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   const statusControl = (
     <PageStatusField
       statusText={displayPage.statusText ?? STATUS_OPTIONS[0].label}
       statusAppearance={displayPage.statusAppearance ?? STATUS_OPTIONS[0].appearance}
       onChange={(nextStatusText, nextStatusAppearance) => {
-        updateDraftPage({
-          statusText: nextStatusText,
-          statusAppearance: nextStatusAppearance
-        });
+        updateDraftPage({ statusText: nextStatusText, statusAppearance: nextStatusAppearance });
       }}
     />
   );
+
   const widthControl = (
     <DropdownMenu trigger={`Content width: ${getWidthLabel(widthMode)}`} shouldRenderToParent>
       <DropdownItemRadioGroup id="atlas-page-width-options">
@@ -394,11 +401,7 @@ const PageEditorShell = memo(function PageEditorShell({
             key={option.value}
             id={option.value}
             isSelected={widthMode === option.value}
-            onClick={() => {
-              updateDraftPage({
-                widthMode: option.value
-              });
-            }}
+            onClick={() => updateDraftPage({ widthMode: option.value })}
           >
             {option.label}
           </DropdownItemRadio>
@@ -406,6 +409,7 @@ const PageEditorShell = memo(function PageEditorShell({
       </DropdownItemRadioGroup>
     </DropdownMenu>
   );
+
   const titleAlignmentControl = (
     <DropdownMenu trigger={`Title align: ${getTitleAlignmentLabel(titleAlignment)}`} shouldRenderToParent>
       <DropdownItemRadioGroup id="atlas-page-title-alignment-options">
@@ -414,11 +418,7 @@ const PageEditorShell = memo(function PageEditorShell({
             key={option.value}
             id={option.value}
             isSelected={titleAlignment === option.value}
-            onClick={() => {
-              updateDraftPage({
-                titleAlignment: option.value
-              });
-            }}
+            onClick={() => updateDraftPage({ titleAlignment: option.value })}
           >
             {option.label}
           </DropdownItemRadio>
@@ -436,25 +436,36 @@ const PageEditorShell = memo(function PageEditorShell({
     >
       {busyLabel ? <SurfaceLoader label={busyLabel} /> : null}
 
-      <header className="atlas-page-shell__topbar">
-        {isEditing ? (
-          <div className="atlas-page-shell__topbar-title">
-            <span className="atlas-page-shell__editing-label">{getPageDisplayTitle(draftPage.title)}</span>
-          </div>
-        ) : null}
-
-        <div className="atlas-page-shell__topbar-actions">
-          {topbarUpdatedLabel ? <span className="atlas-page-shell__updated-text">{topbarUpdatedLabel}</span> : null}
-
-          <Avatar
-            size="small"
-            name={displayPage.authorName}
-            label={displayPage.authorName}
-            testId="atlas-page-author-avatar"
-          />
-
+      {/*
+        FIX 4: Topbar is now position:sticky top:0 with proper z-index and
+        background synced to dark/light tokens — no more desync with content scroll.
+        The topbar aligns its content to match the editor's max-width container.
+      */}
+      <header className={`atlas-page-shell__topbar${darkMode ? ' atlas-page-shell__topbar--dark' : ''}`}>
+        {/*
+          FIX 4: Topbar inner wraps content so it aligns with the
+          constrained editor body — same max-width as the page content.
+        */}
+        <div className="atlas-page-shell__topbar-inner">
           {isEditing ? (
-            <>
+            <div className="atlas-page-shell__topbar-title">
+              <span className="atlas-page-shell__editing-label">{getPageDisplayTitle(draftPage.title)}</span>
+            </div>
+          ) : null}
+
+          <div className="atlas-page-shell__topbar-actions">
+            {topbarUpdatedLabel ? (
+              <span className="atlas-page-shell__updated-text">{topbarUpdatedLabel}</span>
+            ) : null}
+
+            <Avatar
+              size="small"
+              name={displayPage.authorName}
+              label={displayPage.authorName}
+              testId="atlas-page-author-avatar"
+            />
+
+            {isEditing ? (
               <ButtonGroup>
                 <Button appearance="primary" onClick={handleSubmit}>
                   Update
@@ -463,18 +474,23 @@ const PageEditorShell = memo(function PageEditorShell({
                   Close
                 </Button>
               </ButtonGroup>
-            </>
-          ) : (
-            !readOnly && (
-              <Button appearance="subtle" onClick={handleStartEdit}>
-                Edit
-              </Button>
-            )
-          )}
+            ) : (
+              !readOnly && (
+                <Button appearance="subtle" onClick={handleStartEdit}>
+                  Edit
+                </Button>
+              )
+            )}
+          </div>
         </div>
       </header>
 
       <div className="atlas-page-shell__body">
+        {/*
+          FIX 3: Hero / title section — always left-aligned by default.
+          max-width is controlled by the width mode (centered/wide/full-width)
+          and matches the editor surface width exactly.
+        */}
         <div className={`atlas-page-shell__hero atlas-page-shell__hero--title-${titleAlignment}`}>
           {isEditing ? (
             <div className="atlas-page-shell__edit-toolbar">
@@ -489,15 +505,18 @@ const PageEditorShell = memo(function PageEditorShell({
               aria-label="Page title"
               className="atlas-page-shell__title-input"
               value={draftPage.title}
-              onChange={(event) => {
-                updateDraftPage({
-                  title: event.currentTarget.value
-                });
-              }}
+              onChange={(event) => updateDraftPage({ title: event.currentTarget.value })}
               placeholder="Give this page a title..."
             />
           ) : (
-            <h1 className="atlas-page-shell__title">{getPageDisplayTitle(committedPage.title)}</h1>
+            /*
+              FIX 3: The h1 now has text-align controlled by CSS class derived
+              from titleAlignment (default 'left'), not centered by default.
+              It also respects max-width of the parent editor surface.
+            */
+            <h1 className={`atlas-page-shell__title atlas-page-shell__title--align-${titleAlignment}`}>
+              {getPageDisplayTitle(committedPage.title)}
+            </h1>
           )}
 
           <div className="atlas-page-shell__meta">
@@ -541,12 +560,18 @@ const PageEditorShell = memo(function PageEditorShell({
               )}
             </div>
 
-            <aside className="atlas-page-shell__surface-aside">
-              <AtlasEditorContextPanel
-                page={displayPage}
-                value={isEditing ? draftValue : committedValue}
-              />
-            </aside>
+            {/*
+              FIX 1: Context panel is only rendered when showContextPanel=true (parent-controlled).
+              Default is false — panel is hidden unless explicitly enabled.
+            */}
+            {showContextPanel ? (
+              <aside className="atlas-page-shell__surface-aside">
+                <AtlasEditorContextPanel
+                  page={displayPage}
+                  value={isEditing ? draftValue : committedValue}
+                />
+              </aside>
+            ) : null}
           </div>
         </div>
       </div>
@@ -611,9 +636,7 @@ const EditorSurface = memo(function EditorSurface({
       const normalized = normalizeADF(doc);
       const key = stableADFString(normalized);
 
-      if (key === lastEmittedKeyRef.current) {
-        return;
-      }
+      if (key === lastEmittedKeyRef.current) return;
 
       lastEmittedKeyRef.current = key;
       onChange(normalized);
@@ -639,9 +662,7 @@ const EditorSurface = memo(function EditorSurface({
       return;
     }
 
-    if (incomingValueKey === lastKnownEditorDocumentKeyRef.current) {
-      return;
-    }
+    if (incomingValueKey === lastKnownEditorDocumentKeyRef.current) return;
 
     if (surfaceBusyTimeoutRef.current !== null) {
       window.clearTimeout(surfaceBusyTimeoutRef.current);
@@ -659,7 +680,6 @@ const EditorSurface = memo(function EditorSurface({
   const handleEditorChange = useCallback(
     (editorView: EditorView) => {
       const adf = normalizeADF(transformer.encode(editorView.state.doc as never) as ADFDoc);
-
       lastKnownEditorDocumentKeyRef.current = stableADFString(adf);
       emitChange(adf);
     },
@@ -768,7 +788,11 @@ const SurfaceLoader = memo(function SurfaceLoader({
   compact?: boolean;
 }) {
   return (
-    <div className={`atlas-editor-surface-loader${compact ? ' atlas-editor-surface-loader--compact' : ''}`} role="status" aria-live="polite">
+    <div
+      className={`atlas-editor-surface-loader${compact ? ' atlas-editor-surface-loader--compact' : ''}`}
+      role="status"
+      aria-live="polite"
+    >
       <div className="atlas-editor-surface-loader__card">
         <Spinner size="medium" />
         <span>{label}</span>
@@ -812,26 +836,11 @@ const AtlasEditorContextPanel = memo(function AtlasEditorContextPanel({
       <section className="atlas-context-panel__section">
         <div className="atlas-context-panel__eyebrow">Document stats</div>
         <dl className="atlas-context-panel__stats">
-          <div>
-            <dt>Words</dt>
-            <dd>{stats.words}</dd>
-          </div>
-          <div>
-            <dt>Headings</dt>
-            <dd>{stats.headings}</dd>
-          </div>
-          <div>
-            <dt>Code blocks</dt>
-            <dd>{stats.codeBlocks}</dd>
-          </div>
-          <div>
-            <dt>Tables</dt>
-            <dd>{stats.tables}</dd>
-          </div>
-          <div>
-            <dt>Smart links</dt>
-            <dd>{stats.cards}</dd>
-          </div>
+          <div><dt>Words</dt><dd>{stats.words}</dd></div>
+          <div><dt>Headings</dt><dd>{stats.headings}</dd></div>
+          <div><dt>Code blocks</dt><dd>{stats.codeBlocks}</dd></div>
+          <div><dt>Tables</dt><dd>{stats.tables}</dd></div>
+          <div><dt>Smart links</dt><dd>{stats.cards}</dd></div>
         </dl>
       </section>
 
@@ -841,18 +850,14 @@ const AtlasEditorContextPanel = memo(function AtlasEditorContextPanel({
           <Button
             appearance="subtle"
             spacing="compact"
-            onClick={() => {
-              void copyTextSafely(getPageDisplayTitle(page.title));
-            }}
+            onClick={() => void copyTextSafely(getPageDisplayTitle(page.title))}
           >
             Copy title
           </Button>
           <Button
             appearance="subtle"
             spacing="compact"
-            onClick={() => {
-              void copyTextSafely(JSON.stringify(value, null, 2));
-            }}
+            onClick={() => void copyTextSafely(JSON.stringify(value, null, 2))}
           >
             Copy ADF
           </Button>
@@ -882,10 +887,7 @@ const PageStatusField = memo(function PageStatusField({
     }
 
     const handlePointerDown = (event: MouseEvent): void => {
-      if (containerRef.current?.contains(event.target as Node)) {
-        return;
-      }
-
+      if (containerRef.current?.contains(event.target as Node)) return;
       setIsOpen(false);
       setIsAppearanceMenuOpen(false);
     };
@@ -925,9 +927,7 @@ const PageStatusField = memo(function PageStatusField({
               aria-label="Custom status text"
               value={statusText}
               placeholder="Add custom status"
-              onChange={(event) => {
-                onChange(event.currentTarget.value, statusAppearance);
-              }}
+              onChange={(event) => onChange(event.currentTarget.value, statusAppearance)}
             />
 
             {isAppearanceMenuOpen ? (
@@ -993,11 +993,7 @@ const PageStatusInline = memo(function PageStatusInline({
   );
 });
 
-const StatusPropertyIcon = memo(function StatusPropertyIcon({
-  active
-}: {
-  active: boolean;
-}) {
+const StatusPropertyIcon = memo(function StatusPropertyIcon({ active }: { active: boolean }) {
   return <StatusInformationIcon label="" color={active ? '#0C66E4' : '#44546F'} />;
 });
 
@@ -1014,18 +1010,23 @@ const PageStatusIcon = memo(function PageStatusIcon({
     <span
       className={`atlas-page-status__dot atlas-page-status__dot--${statusAppearance}`}
       aria-hidden="true"
-    ></span>
+    />
   );
 });
 
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
 function normalizePage(page?: AtlaskitEditorProps['page']): AtlasEditorPage | null {
-  if (!page) {
-    return null;
-  }
+  if (!page) return null;
 
   const title = getPageDisplayTitle(page.title);
-  const authorName = typeof page.authorName === 'string' && page.authorName.trim().length > 0 ? page.authorName.trim() : 'Unknown author';
-  const metaItems = Array.isArray(page.metaItems) ? page.metaItems.filter((item): item is string => typeof item === 'string' && item.trim().length > 0) : [];
+  const authorName =
+    typeof page.authorName === 'string' && page.authorName.trim().length > 0
+      ? page.authorName.trim()
+      : 'Unknown author';
+  const metaItems = Array.isArray(page.metaItems)
+    ? page.metaItems.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+    : [];
   const normalizedStatusText = normalizeStatusText(page.statusText);
   const matchingStatus =
     STATUS_OPTIONS.find((option) => option.label === normalizedStatusText) ??
@@ -1039,10 +1040,13 @@ function normalizePage(page?: AtlaskitEditorProps['page']): AtlasEditorPage | nu
         ? page.authorInitials.trim().slice(0, 2).toUpperCase()
         : deriveInitials(authorName),
     updatedText:
-      typeof page.updatedText === 'string' && page.updatedText.trim().length > 0 ? page.updatedText.trim() : 'Updated just now',
+      typeof page.updatedText === 'string' && page.updatedText.trim().length > 0
+        ? page.updatedText.trim()
+        : 'Updated just now',
     metaItems,
     statusText: normalizedStatusText,
     statusAppearance: page.statusAppearance ?? matchingStatus?.appearance ?? STATUS_OPTIONS[0].appearance,
+    // FIX 3: Default widthMode to 'centered' and titleAlignment to 'left'
     widthMode:
       page.widthMode === 'wide' || page.widthMode === 'full-width' || page.widthMode === 'centered'
         ? page.widthMode
@@ -1050,7 +1054,7 @@ function normalizePage(page?: AtlaskitEditorProps['page']): AtlasEditorPage | nu
     titleAlignment:
       page.titleAlignment === 'center' || page.titleAlignment === 'right' || page.titleAlignment === 'left'
         ? page.titleAlignment
-        : 'left'
+        : 'left' // always default to left
   };
 }
 
@@ -1069,10 +1073,7 @@ function deriveInitials(name: string): string {
     .filter(Boolean)
     .slice(0, 2);
 
-  if (parts.length === 0) {
-    return 'U';
-  }
-
+  if (parts.length === 0) return 'U';
   return parts.map((part) => part[0]?.toUpperCase() ?? '').join('');
 }
 
@@ -1083,38 +1084,25 @@ function getTopbarUpdatedLabel(isEditing: boolean, updatedText?: string): string
     return isEditing ? 'Edited just now' : null;
   }
 
-  if (!isEditing) {
-    return normalizedUpdatedText;
-  }
+  if (!isEditing) return normalizedUpdatedText;
 
-  if (/^edited\b/i.test(normalizedUpdatedText)) {
-    return normalizedUpdatedText;
-  }
+  if (/^edited\b/i.test(normalizedUpdatedText)) return normalizedUpdatedText;
 
   return normalizedUpdatedText.replace(/^updated\b/i, 'Edited');
 }
 
 function normalizeUpdatedText(updatedText?: string): string | null {
-  if (typeof updatedText !== 'string') {
-    return null;
-  }
+  if (typeof updatedText !== 'string') return null;
 
   const trimmedText = updatedText.trim();
+  if (!trimmedText) return null;
 
-  if (!trimmedText) {
-    return null;
-  }
-
-  if (/^(updated|edited)\b/i.test(trimmedText)) {
-    return trimmedText;
-  }
+  if (/^(updated|edited)\b/i.test(trimmedText)) return trimmedText;
 
   if (
     /^(just now|moments? ago|today|yesterday)\b/i.test(trimmedText) ||
     /\bago$/i.test(trimmedText) ||
-    /^\d+\s*(s|sec|secs|second|seconds|min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days|w|week|weeks|mo|month|months|y|year|years)\b/i.test(
-      trimmedText
-    )
+    /^\d+\s*(s|sec|secs|second|seconds|min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days|w|week|weeks|mo|month|months|y|year|years)\b/i.test(trimmedText)
   ) {
     return `Updated ${trimmedText}`;
   }
@@ -1127,7 +1115,10 @@ function getWidthLabel(widthMode: AtlasPageWidthMode): string {
 }
 
 function getTitleAlignmentLabel(titleAlignment: AtlasPageTitleAlignment): string {
-  return TITLE_ALIGNMENT_OPTIONS.find((option) => option.value === titleAlignment)?.label ?? TITLE_ALIGNMENT_OPTIONS[0].label;
+  return (
+    TITLE_ALIGNMENT_OPTIONS.find((option) => option.value === titleAlignment)?.label ??
+    TITLE_ALIGNMENT_OPTIONS[0].label
+  );
 }
 
 function normalizeStatusText(statusText: string | undefined): string {
@@ -1162,7 +1153,6 @@ function restoreThemeAttribute(target: HTMLElement, name: string, value: string 
     target.removeAttribute(name);
     return;
   }
-
   target.setAttribute(name, value);
 }
 
@@ -1175,26 +1165,15 @@ type DocumentStats = {
 };
 
 function collectDocumentStats(document: ADFDoc): DocumentStats {
-  const stats: DocumentStats = {
-    words: 0,
-    headings: 0,
-    codeBlocks: 0,
-    tables: 0,
-    cards: 0
-  };
+  const stats: DocumentStats = { words: 0, headings: 0, codeBlocks: 0, tables: 0, cards: 0 };
 
   const visit = (node: unknown): void => {
-    if (!node || typeof node !== 'object') {
-      return;
-    }
+    if (!node || typeof node !== 'object') return;
 
     const record = node as { type?: unknown; text?: unknown; content?: unknown[] };
 
     if (typeof record.text === 'string') {
-      stats.words += record.text
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean).length;
+      stats.words += record.text.trim().split(/\s+/).filter(Boolean).length;
     }
 
     switch (record.type) {
@@ -1211,8 +1190,6 @@ function collectDocumentStats(document: ADFDoc): DocumentStats {
       case 'blockCard':
       case 'embedCard':
         stats.cards += 1;
-        break;
-      default:
         break;
     }
 
