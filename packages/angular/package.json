@@ -1,6 +1,6 @@
 {
   "name": "@sumanthnagireddi/atlas-angular",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": false,
   "type": "module",
   "description": "Angular wrappers for the Atlas editor and side navigation runtimes.",
@@ -27,6 +27,12 @@
     ".": {
       "types": "./dist/public-api.d.ts",
       "import": "./dist/public-api.js"
+    },
+    "./runtime/atlas-editor.js": {
+      "default": "./dist/runtime/atlas-editor.js"
+    },
+    "./runtime/atlas-side-nav.js": {
+      "default": "./dist/runtime/atlas-side-nav.js"
     }
   },
   "files": [

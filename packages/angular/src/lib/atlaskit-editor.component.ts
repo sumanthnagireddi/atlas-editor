@@ -55,7 +55,7 @@ type AtlaskitEditorElementContract = HTMLElement & {
 };
 
 const EDITOR_ASSET_VERSION = '2026-05-08-angular-lib-1';
-const LOCAL_EDITOR_MODULE_URL = new URL('../runtime/atlas-editor.js', import.meta.url).href;
+const LOCAL_EDITOR_MODULE_SPECIFIER = '@sumanthnagireddi/atlas-angular/runtime/atlas-editor.js';
 const EMPTY_DOCUMENT: ADFDoc = {
   version: 1,
   type: 'doc',
@@ -253,7 +253,7 @@ async function loadEditorElementModule(assetBaseUrl: string | null | undefined):
   if (normalizedBaseUrl) {
     await importEditor(`${normalizedBaseUrl}/atlas-editor.js?v=${EDITOR_ASSET_VERSION}`);
   } else {
-    await importEditor(LOCAL_EDITOR_MODULE_URL);
+    await importEditor(LOCAL_EDITOR_MODULE_SPECIFIER);
   }
 
   await customElements.whenDefined('atlas-editor');

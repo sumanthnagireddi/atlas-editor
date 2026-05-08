@@ -58,6 +58,7 @@ jobs:
           node-version: 22
           cache: npm
           registry-url: https://registry.npmjs.org
+          scope: '@sumanthnagireddi'
 
       - name: Install dependencies
         run: npm ci
@@ -79,6 +80,17 @@ jobs:
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
             echo "Package version does not exist yet; continuing to publish."
+          fi
+
+      - name: Validate npm publish token
+        if: steps.npm-check.outputs.exists != 'true'
+        shell: bash
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN}" ]; then
+            echo "::error title=Missing NPM_TOKEN secret::Add repository secret NPM_TOKEN with publish access for @sumanthnagireddi/atlas-angular before re-running this workflow."
+            exit 1
           fi
 
       - name: Publish Angular package to npm

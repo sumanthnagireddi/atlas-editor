@@ -160,7 +160,7 @@ type AtlaskitSideNavElementContract = HTMLElement & {
 };
 
 const NAVIGATION_ASSET_VERSION = '2026-05-08-angular-lib-1';
-const LOCAL_NAVIGATION_MODULE_URL = new URL('../runtime/atlas-side-nav.js', import.meta.url).href;
+const LOCAL_NAVIGATION_MODULE_SPECIFIER = '@sumanthnagireddi/atlas-angular/runtime/atlas-side-nav.js';
 const EMPTY_MODEL: AtlasSideNavModel = {
   label: 'Atlas side navigation',
   header: {
@@ -350,7 +350,7 @@ async function loadNavigationElementModule(assetBaseUrl: string | null | undefin
   if (normalizedBaseUrl) {
     await importNavigation(`${normalizedBaseUrl}/atlas-side-nav.js?v=${NAVIGATION_ASSET_VERSION}`);
   } else {
-    await importNavigation(LOCAL_NAVIGATION_MODULE_URL);
+    await importNavigation(LOCAL_NAVIGATION_MODULE_SPECIFIER);
   }
 
   await customElements.whenDefined('atlas-side-nav');
