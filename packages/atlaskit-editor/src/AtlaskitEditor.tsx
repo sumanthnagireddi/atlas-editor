@@ -3,6 +3,11 @@ import Avatar from '@atlaskit/avatar';
 import Button, { ButtonGroup } from '@atlaskit/button';
 import DropdownMenu, { DropdownItemRadio, DropdownItemRadioGroup } from '@atlaskit/dropdown-menu';
 import ChevronDownIcon from '@atlaskit/icon/core/chevron-down';
+import EditIcon from '@atlaskit/icon/core/edit';
+import LinkIcon from '@atlaskit/icon/core/link';
+import PageIcon from '@atlaskit/icon/core/page';
+import ShareIcon from '@atlaskit/icon/core/share';
+import ShowMoreHorizontalIcon from '@atlaskit/icon/core/show-more-horizontal';
 import StatusInformationIcon from '@atlaskit/icon/core/status-information';
 import StatusVerifiedIcon from '@atlaskit/icon/core/status-verified';
 import Spinner from '@atlaskit/spinner';
@@ -220,6 +225,9 @@ const PageEditorShell = memo(function PageEditorShell({
   const busyTokenRef = useRef(0);
   const busyContextRef = useRef<'action' | 'sync' | null>(null);
   const busyTimeoutRef = useRef<number | null>(null);
+  const topbarRef = useRef<HTMLElement | null>(null);
+  const titleAnchorRef = useRef<HTMLDivElement | null>(null);
+  const [showStickyTitle, setShowStickyTitle] = useState(false);
 
   const startBusyState = useCallback((label: string, minimumMs = 320, context: 'action' | 'sync' = 'sync') => {
     if (context === 'sync' && busyContextRef.current === 'action') {
@@ -373,6 +381,7 @@ const PageEditorShell = memo(function PageEditorShell({
   const titleAlignment = displayPage.titleAlignment ?? 'left';
 
   const topbarUpdatedLabel = getTopbarUpdatedLabel(isEditing, displayPage.updatedText);
+  const topbarTitle = getPageDisplayTitle(isEditing ? draftPage.title : committedPage.title);
 
   const rootClassName = [
     surfaceDarkClass,
@@ -427,6 +436,53 @@ const PageEditorShell = memo(function PageEditorShell({
     </DropdownMenu>
   );
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    let frameId: number | null = null;
+
+    const updateStickyTitleVisibility = () => {
+      const topbarElement = topbarRef.current;
+      const titleAnchorElement = titleAnchorRef.current;
+
+      if (!topbarElement || !titleAnchorElement) {
+        setShowStickyTitle(false);
+        return;
+      }
+
+      const topbarBottom = topbarElement.getBoundingClientRect().bottom;
+      const titleAnchorTop = titleAnchorElement.getBoundingClientRect().top;
+
+      setShowStickyTitle(titleAnchorTop <= topbarBottom + 4);
+    };
+
+    const queueUpdate = () => {
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
+
+      frameId = window.requestAnimationFrame(() => {
+        frameId = null;
+        updateStickyTitleVisibility();
+      });
+    };
+
+    queueUpdate();
+    window.addEventListener('scroll', queueUpdate, { passive: true });
+    window.addEventListener('resize', queueUpdate);
+
+    return () => {
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
+
+      window.removeEventListener('scroll', queueUpdate);
+      window.removeEventListener('resize', queueUpdate);
+    };
+  }, [isEditing, topbarTitle, darkMode, widthMode, titleAlignment]);
+
   return (
     <section
       className={rootClassName}
@@ -441,17 +497,31 @@ const PageEditorShell = memo(function PageEditorShell({
         background synced to dark/light tokens — no more desync with content scroll.
         The topbar aligns its content to match the editor's max-width container.
       */}
-      <header className={`atlas-page-shell__topbar${darkMode ? ' atlas-page-shell__topbar--dark' : ''}`}>
+      <header ref={topbarRef} className="atlas-page-shell__topbar">
         {/*
           FIX 4: Topbar inner wraps content so it aligns with the
           constrained editor body — same max-width as the page content.
         */}
         <div className="atlas-page-shell__topbar-inner">
-          {isEditing ? (
-            <div className="atlas-page-shell__topbar-title">
-              <span className="atlas-page-shell__editing-label">{getPageDisplayTitle(draftPage.title)}</span>
+          <div className="atlas-page-shell__topbar-left">
+            <Button
+              appearance="subtle"
+              spacing="none"
+              className="atlas-page-shell__icon-button atlas-page-shell__topbar-toggle"
+              aria-label="Collapse page header"
+            >
+              <ChevronDownIcon label="" />
+            </Button>
+
+            <div
+              className={`atlas-page-shell__topbar-title${
+                showStickyTitle ? ' atlas-page-shell__topbar-title--visible' : ''
+              }`}
+            >
+              <PageIcon label="" />
+              <span className="atlas-page-shell__editing-label">{topbarTitle}</span>
             </div>
-          ) : null}
+          </div>
 
           <div className="atlas-page-shell__topbar-actions">
             {topbarUpdatedLabel ? (
@@ -466,20 +536,77 @@ const PageEditorShell = memo(function PageEditorShell({
             />
 
             {isEditing ? (
-              <ButtonGroup>
-                <Button appearance="primary" onClick={handleSubmit}>
-                  Update
-                </Button>
+              <>
+                <ButtonGroup>
+                  <Button appearance="primary" onClick={handleSubmit}>
+                    Update
+                  </Button>
+                  <Button
+                    appearance="primary"
+                    spacing="none"
+                    className="atlas-page-shell__icon-button atlas-page-shell__split-button"
+                    aria-label="More update actions"
+                  >
+                    <ChevronDownIcon label="" />
+                  </Button>
+                </ButtonGroup>
+
                 <Button appearance="subtle" onClick={handleCancel}>
                   Close
                 </Button>
-              </ButtonGroup>
-            ) : (
-              !readOnly && (
-                <Button appearance="subtle" onClick={handleStartEdit}>
-                  Edit
+
+                <Button appearance="subtle" iconBefore={<ShareIcon label="" />}>
+                  Share
                 </Button>
-              )
+
+                <Button
+                  appearance="subtle"
+                  spacing="none"
+                  className="atlas-page-shell__icon-button"
+                  aria-label="Copy page link"
+                >
+                  <LinkIcon label="" />
+                </Button>
+
+                <Button
+                  appearance="subtle"
+                  spacing="none"
+                  className="atlas-page-shell__icon-button"
+                  aria-label="More page actions"
+                >
+                  <ShowMoreHorizontalIcon label="" />
+                </Button>
+              </>
+            ) : (
+              <>
+                {!readOnly ? (
+                  <Button appearance="subtle" iconBefore={<EditIcon label="" />} onClick={handleStartEdit}>
+                    Edit
+                  </Button>
+                ) : null}
+
+                <Button appearance="subtle" iconBefore={<ShareIcon label="" />}>
+                  Share
+                </Button>
+
+                <Button
+                  appearance="subtle"
+                  spacing="none"
+                  className="atlas-page-shell__icon-button"
+                  aria-label="Copy page link"
+                >
+                  <LinkIcon label="" />
+                </Button>
+
+                <Button
+                  appearance="subtle"
+                  spacing="none"
+                  className="atlas-page-shell__icon-button"
+                  aria-label="More page actions"
+                >
+                  <ShowMoreHorizontalIcon label="" />
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -500,24 +627,26 @@ const PageEditorShell = memo(function PageEditorShell({
             </div>
           ) : null}
 
-          {isEditing ? (
-            <Textfield
-              aria-label="Page title"
-              className="atlas-page-shell__title-input"
-              value={draftPage.title}
-              onChange={(event) => updateDraftPage({ title: event.currentTarget.value })}
-              placeholder="Give this page a title..."
-            />
-          ) : (
-            /*
-              FIX 3: The h1 now has text-align controlled by CSS class derived
-              from titleAlignment (default 'left'), not centered by default.
-              It also respects max-width of the parent editor surface.
-            */
-            <h1 className={`atlas-page-shell__title atlas-page-shell__title--align-${titleAlignment}`}>
-              {getPageDisplayTitle(committedPage.title)}
-            </h1>
-          )}
+          <div ref={titleAnchorRef} className="atlas-page-shell__title-anchor">
+            {isEditing ? (
+              <Textfield
+                aria-label="Page title"
+                className="atlas-page-shell__title-input"
+                value={draftPage.title}
+                onChange={(event) => updateDraftPage({ title: event.currentTarget.value })}
+                placeholder="Give this page a title..."
+              />
+            ) : (
+              /*
+                FIX 3: The h1 now has text-align controlled by CSS class derived
+                from titleAlignment (default 'left'), not centered by default.
+                It also respects max-width of the parent editor surface.
+              */
+              <h1 className={`atlas-page-shell__title atlas-page-shell__title--align-${titleAlignment}`}>
+                {getPageDisplayTitle(committedPage.title)}
+              </h1>
+            )}
+          </div>
 
           <div className="atlas-page-shell__meta">
             <Avatar

@@ -88,6 +88,7 @@ atlaskit-editor {
 
 .atlas-editor [data-testid='ak-editor-main-toolbar'] [data-toolbar-type='primary'] {
   min-height: 44px;
+  margin-top: -12px !important
 }
 
 .atlas-editor [data-testid='ak-editor-main-toolbar'] button {
@@ -466,18 +467,50 @@ atlaskit-editor {
   z-index: 32;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 16px;
+  justify-content: center;
   min-height: 56px;
-  padding: 0 24px;
+  padding: 8px 16px;
   border-bottom: 1px solid var(--ds-border, rgba(9, 30, 66, 0.14));
   background: var(--atlas-editor-toolbar-bg, var(--ds-surface, #ffffff));
 }
+.atlas-page-shell__topbar-inner {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+  gap: 16px;
+}
+
+.atlas-page-shell__topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
 
 .atlas-page-shell__topbar-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   min-width: 0;
   flex: 0 1 auto;
-  max-width: min(100%, var(--atlas-page-hero-max-width, 820px));
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-6px);
+  transition:
+    max-width 180ms ease,
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.atlas-page-shell__topbar-title--visible {
+  max-width: 100%;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
 }
 
 .atlas-page-shell__editing-label {
@@ -494,8 +527,8 @@ atlaskit-editor {
 .atlas-page-shell__topbar-actions {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
+  justify-content: flex-end;
+  gap: 8px;
   flex: 0 0 auto;
   flex-wrap: wrap;
 }
@@ -504,6 +537,20 @@ atlaskit-editor {
   color: var(--ds-text-subtle, #44546f);
   font-size: 14px;
   white-space: nowrap;
+}
+
+.atlas-page-shell__icon-button {
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.atlas-page-shell__topbar-toggle {
+  border-radius: 6px;
+  background: var(--ds-background-neutral, #f1f2f4);
+}
+
+.atlas-page-shell__split-button {
+  min-width: 36px;
 }
 
 .atlas-page-shell__body {
@@ -560,6 +607,10 @@ atlaskit-editor {
   line-height: 1.08;
   font-weight: 500;
   letter-spacing: 0;
+}
+
+.atlas-page-shell__title-anchor {
+  width: 100%;
 }
 
 .atlas-page-shell__title-input {
@@ -1237,6 +1288,10 @@ atlaskit-editor[dark-mode] [data-testid='ak-editor-main-toolbar'] svg {
 .atlas-editor--dark .atlas-page-shell__updated-text,
 .atlas-editor--dark .atlas-page-shell__meta-item {
   color: #9fadbc;
+}
+
+.atlas-editor--dark .atlas-page-shell__topbar-toggle {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .atlas-editor--dark .atlas-page-shell__property-button,
