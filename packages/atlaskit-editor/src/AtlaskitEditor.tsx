@@ -559,19 +559,6 @@ const PageEditorShell = memo(function PageEditorShell({
                 <AtlaskitRenderer value={committedValue} darkMode={darkMode} embedded />
               )}
             </div>
-
-            {/*
-              FIX 1: Context panel is only rendered when showContextPanel=true (parent-controlled).
-              Default is false — panel is hidden unless explicitly enabled.
-            */}
-            {showContextPanel ? (
-              <aside className="atlas-page-shell__surface-aside">
-                <AtlasEditorContextPanel
-                  page={displayPage}
-                  value={isEditing ? draftValue : committedValue}
-                />
-              </aside>
-            ) : null}
           </div>
         </div>
       </div>
