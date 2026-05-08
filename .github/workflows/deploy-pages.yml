@@ -41,6 +41,12 @@ jobs:
           mkdir -p dist/angular-shell/browser/web-components
           cp -R dist/web-components/. dist/angular-shell/browser/web-components/
 
+      - name: Upload consumer bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-web-components
+          path: dist/web-components
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 

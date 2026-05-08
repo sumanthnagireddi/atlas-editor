@@ -21,11 +21,23 @@ export function isADFDocument(value: unknown): value is ADFDoc {
 }
 
 export function normalizeADF(value: unknown): ADFDoc {
-  if (!isADFDocument(value)) {
+  if (!value || typeof value !== 'object') {
     return structuredClone(EMPTY_ADF_DOCUMENT);
   }
 
-  return structuredClone(value);
+  const candidate = value as Partial<ADFDoc> & {
+    content?: unknown;
+  };
+
+  if (candidate.type !== 'doc') {
+    return structuredClone(EMPTY_ADF_DOCUMENT);
+  }
+
+  return structuredClone({
+    ...candidate,
+    version: 1,
+    content: Array.isArray(candidate.content) ? candidate.content : []
+  }) as ADFDoc;
 }
 
 export function stableADFString(value: unknown): string {

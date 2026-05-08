@@ -5,9 +5,7 @@ export default defineConfig({
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'),
     'process.env.REACT_SSR': 'false',
-    'process.env.CI': 'false',
-    'process.env.ENABLE_PLATFORM_FF': 'false',
-    'process.env.STORYBOOK_ENABLE_PLATFORM_FF': 'false'
+    'process.env.CI': 'false'
   },
   plugins: [react()],
   build: {
@@ -15,8 +13,8 @@ export default defineConfig({
     emptyOutDir: true,
     lib: {
       entry: 'src/index.ts',
-      name: 'AtlasAtlaskitEditor',
-      fileName: 'atlas-atlaskit-editor',
+      name: 'AtlasAtlaskitNavigation',
+      fileName: 'atlas-atlaskit-navigation',
       formats: ['es']
     },
     sourcemap: process.env.VITE_BUILD_SOURCEMAP === 'true',

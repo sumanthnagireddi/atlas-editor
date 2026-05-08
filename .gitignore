@@ -2,7 +2,10 @@ node_modules/
 dist/
 packages/**/build/
 .angular/
+.env.local
 .vscode/
+.codex-artifacts/
+tmp-ui-check/
 *.log
 *.err
 confluence-shell-check*.png
