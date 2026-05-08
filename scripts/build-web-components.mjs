@@ -28,6 +28,7 @@ async function copyFileWithRetry(sourcePath, destinationPath, retries = 6) {
 function extractRelativeRuntimeImports(sourceCode) {
   const matches = new Set();
   const patterns = [
+    /["'](\.\/[^"']+\.(?:js|css))["']/g,
     /import\s+["'](\.\/[^"']+\.(?:js|css))["']/g,
     /from\s+["'](\.\/[^"']+\.(?:js|css))["']/g,
     /import\(\s*["'](\.\/[^"']+\.(?:js|css))["']\s*\)/g,

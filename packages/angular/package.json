@@ -1,6 +1,6 @@
 {
   "name": "@sumanthnagireddi/atlas-angular",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": false,
   "type": "module",
   "description": "Angular wrappers for the Atlas editor and side navigation runtimes.",

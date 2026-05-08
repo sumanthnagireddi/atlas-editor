@@ -51,13 +51,27 @@ async function fileExists(relativePath) {
   }
 }
 
-const runtimeReady =
+const editorRuntimeReady =
+  (await fileExists('packages/atlaskit-editor/dist/atlas-atlaskit-editor.js')) &&
+  (await fileExists('packages/atlaskit-editor/dist/atlas-atlaskit-editor.css'));
+
+const navigationRuntimeReady =
+  (await fileExists('packages/atlaskit-navigation/dist/atlas-atlaskit-navigation.js')) &&
+  (await fileExists('packages/atlaskit-navigation/dist/atlas-atlaskit-navigation.css'));
+
+const bundleReady =
   (await fileExists('dist/web-components/atlas-editor.js')) &&
   (await fileExists('dist/web-components/atlas-side-nav.js'));
 
-if (!runtimeReady) {
+if (!editorRuntimeReady) {
   await runNpmScript(['run', 'build:editor'], 'editor');
+}
+
+if (!navigationRuntimeReady) {
   await runNpmScript(['run', 'build:navigation'], 'navigation');
+}
+
+if (!bundleReady) {
   await runNpmScript(['run', 'build:bundle'], 'bundle');
 }
 

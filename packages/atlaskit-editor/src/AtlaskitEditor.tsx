@@ -372,6 +372,7 @@ const PageEditorShell = memo(function PageEditorShell({
   const surfaceDarkClass = darkMode ? 'atlas-editor atlas-editor--dark' : 'atlas-editor';
   const widthMode = displayPage.widthMode ?? 'centered';
   const titleAlignment = displayPage.titleAlignment ?? 'left';
+  const topbarUpdatedLabel = getTopbarUpdatedLabel(isEditing, displayPage.updatedText);
   const rootClassName = `${surfaceDarkClass} atlas-page-shell atlas-page-shell--${widthMode}${isEditing ? ' atlas-page-shell--editing' : ''}`;
   const statusControl = (
     <PageStatusField
@@ -436,16 +437,14 @@ const PageEditorShell = memo(function PageEditorShell({
       {busyLabel ? <SurfaceLoader label={busyLabel} /> : null}
 
       <header className="atlas-page-shell__topbar">
-        <div className="atlas-page-shell__topbar-title">
-          {isEditing ? (
+        {isEditing ? (
+          <div className="atlas-page-shell__topbar-title">
             <span className="atlas-page-shell__editing-label">{getPageDisplayTitle(draftPage.title)}</span>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
 
         <div className="atlas-page-shell__topbar-actions">
-          <span className="atlas-page-shell__updated-text">
-            {isEditing ? getEditedLabel(displayPage.updatedText) : displayPage.updatedText}
-          </span>
+          {topbarUpdatedLabel ? <span className="atlas-page-shell__updated-text">{topbarUpdatedLabel}</span> : null}
 
           <Avatar
             size="small"
@@ -526,19 +525,29 @@ const PageEditorShell = memo(function PageEditorShell({
         </div>
 
         <div className="atlas-page-shell__surface">
-          {isEditing ? (
-            <EditorSurface
-              value={draftValue}
-              onChange={handleEditorChange}
-              darkMode={darkMode}
-              debounceMs={debounceMs}
-              placeholder={placeholder}
-              page={draftPage}
-              embedded
-            />
-          ) : (
-            <AtlaskitRenderer value={committedValue} darkMode={darkMode} embedded />
-          )}
+          <div className="atlas-page-shell__surface-layout">
+            <div className="atlas-page-shell__surface-main">
+              {isEditing ? (
+                <EditorSurface
+                  value={draftValue}
+                  onChange={handleEditorChange}
+                  darkMode={darkMode}
+                  debounceMs={debounceMs}
+                  placeholder={placeholder}
+                  embedded
+                />
+              ) : (
+                <AtlaskitRenderer value={committedValue} darkMode={darkMode} embedded />
+              )}
+            </div>
+
+            <aside className="atlas-page-shell__surface-aside">
+              <AtlasEditorContextPanel
+                page={displayPage}
+                value={isEditing ? draftValue : committedValue}
+              />
+            </aside>
+          </div>
         </div>
       </div>
     </section>
@@ -551,11 +560,9 @@ const EditorSurface = memo(function EditorSurface({
   darkMode,
   debounceMs,
   placeholder,
-  page = null,
   embedded = false
 }: Required<Pick<AtlaskitEditorProps, 'onChange' | 'darkMode' | 'debounceMs' | 'placeholder'>> & {
   value: ADFDoc;
-  page?: AtlasEditorPage | null;
   embedded?: boolean;
 }) {
   const incomingValueKey = useMemo(() => stableADFString(value), [value]);
@@ -573,13 +580,6 @@ const EditorSurface = memo(function EditorSurface({
   const taskDecisionProvider = useMemo(() => createTaskDecisionProvider(), []);
   const annotationProviders = useMemo(() => createAnnotationProviders(), []);
   const cardProvider = useMemo(() => createCardProvider(), []);
-  const editorContextPanel = useMemo(() => {
-    if (!embedded || !page) {
-      return undefined;
-    }
-
-    return <AtlasEditorContextPanel page={page} value={value} />;
-  }, [embedded, page, value]);
   const initialPluginConfiguration = useMemo(
     () =>
       ({
@@ -704,7 +704,6 @@ const EditorSurface = memo(function EditorSurface({
         allowCompositionInputOverride: true,
         appearance: 'full-page'
       }}
-      contextPanel={editorContextPanel as never}
       elementBrowser={{ showModal: true, replacePlusMenu: true }}
       initialPluginConfiguration={initialPluginConfiguration}
       maxContentSize={50000}
@@ -1077,16 +1076,50 @@ function deriveInitials(name: string): string {
   return parts.map((part) => part[0]?.toUpperCase() ?? '').join('');
 }
 
-function getEditedLabel(updatedText?: string): string {
-  if (!updatedText) {
-    return 'Edited just now';
+function getTopbarUpdatedLabel(isEditing: boolean, updatedText?: string): string | null {
+  const normalizedUpdatedText = normalizeUpdatedText(updatedText);
+
+  if (!normalizedUpdatedText) {
+    return isEditing ? 'Edited just now' : null;
   }
 
-  if (/^updated\b/i.test(updatedText)) {
-    return updatedText.replace(/^updated\b/i, 'Edited');
+  if (!isEditing) {
+    return normalizedUpdatedText;
   }
 
-  return `Edited ${updatedText}`;
+  if (/^edited\b/i.test(normalizedUpdatedText)) {
+    return normalizedUpdatedText;
+  }
+
+  return normalizedUpdatedText.replace(/^updated\b/i, 'Edited');
+}
+
+function normalizeUpdatedText(updatedText?: string): string | null {
+  if (typeof updatedText !== 'string') {
+    return null;
+  }
+
+  const trimmedText = updatedText.trim();
+
+  if (!trimmedText) {
+    return null;
+  }
+
+  if (/^(updated|edited)\b/i.test(trimmedText)) {
+    return trimmedText;
+  }
+
+  if (
+    /^(just now|moments? ago|today|yesterday)\b/i.test(trimmedText) ||
+    /\bago$/i.test(trimmedText) ||
+    /^\d+\s*(s|sec|secs|second|seconds|min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days|w|week|weeks|mo|month|months|y|year|years)\b/i.test(
+      trimmedText
+    )
+  ) {
+    return `Updated ${trimmedText}`;
+  }
+
+  return null;
 }
 
 function getWidthLabel(widthMode: AtlasPageWidthMode): string {

@@ -12,7 +12,7 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'dist',
-    emptyOutDir: true,
+    emptyOutDir: false,
     lib: {
       entry: 'src/index.ts',
       name: 'AtlasAtlaskitEditor',
