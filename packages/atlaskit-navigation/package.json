@@ -1,0 +1,53 @@
+{
+  "name": "@atlas/atlaskit-navigation",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/atlas-atlaskit-navigation.js",
+  "module": "./dist/atlas-atlaskit-navigation.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/atlas-atlaskit-navigation.js"
+    },
+    "./web-component": {
+      "types": "./dist/web-component.d.ts",
+      "import": "./dist/atlas-atlaskit-navigation.js"
+    }
+  },
+  "scripts": {
+    "build": "npm run build:runtime && npm run build:types",
+    "build:runtime": "vite build",
+    "build:types": "tsc -p tsconfig.types.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@atlaskit/app-provider": "^3.4.2",
+    "@atlaskit/avatar": "^25.14.1",
+    "@atlaskit/badge": "^18.2.2",
+    "@atlaskit/button": "^23.11.3",
+    "@atlaskit/dropdown-menu": "^16.8.9",
+    "@atlaskit/icon": "^28.3.0",
+    "@atlaskit/lozenge": "^13.8.0",
+    "@atlaskit/popup": "^5.1.9",
+    "@atlaskit/primitives": "^19.0.0",
+    "@atlaskit/side-navigation": "^11.2.1",
+    "@atlaskit/spinner": "^19.1.2",
+    "@atlaskit/textfield": "^8.3.2",
+    "@atlaskit/tokens": "13.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.4.1",
+    "vite": "^6.3.5",
+    "vite-plugin-dts": "^4.5.3"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

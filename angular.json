@@ -27,8 +27,12 @@
               },
               {
                 "glob": "**/*",
-                "input": "packages/atlaskit-editor/build",
-                "output": "assets/atlaskit-editor"
+                "input": "dist/web-components",
+                "output": "assets/atlas",
+                "ignore": [
+                  "**/*.d.ts",
+                  "**/*.map"
+                ]
               }
             ],
             "styles": [
@@ -73,5 +77,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "be85d807-219e-47a4-a38f-be5f8750c360"
   }
 }

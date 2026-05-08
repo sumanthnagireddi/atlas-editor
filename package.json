@@ -5,15 +5,23 @@
   "description": "Angular application hosting a React Atlaskit editor through a production custom element boundary.",
   "workspaces": [
     "apps/angular-shell",
-    "packages/atlaskit-editor"
+    "packages/atlaskit-editor",
+    "packages/atlaskit-navigation"
   ],
   "scripts": {
-    "start": "npm run start -w apps/angular-shell",
-    "build": "npm run build:editor && npm run build:angular && npm run build:bundle",
+    "dev":"npm run start",
+    "start": "npm run build && npm run start:angular-shell",
+    "start:angular-shell": "npm run start -w apps/angular-shell",
+    "build": "node ./scripts/build-workspace.mjs",
     "build:angular": "npm run build -w apps/angular-shell",
     "build:editor": "npm run build -w packages/atlaskit-editor",
+    "build:editor:runtime": "npm run build:runtime -w packages/atlaskit-editor",
+    "build:editor:types": "npm run build:types -w packages/atlaskit-editor",
+    "build:navigation": "npm run build -w packages/atlaskit-navigation",
+    "build:navigation:runtime": "npm run build:runtime -w packages/atlaskit-navigation",
+    "build:navigation:types": "npm run build:types -w packages/atlaskit-navigation",
     "build:bundle": "node ./scripts/build-web-components.mjs",
-    "typecheck": "npm run typecheck -w packages/atlaskit-editor && npm run build:editor && npm run typecheck -w apps/angular-shell",
+    "typecheck": "npm run typecheck -w packages/atlaskit-editor && npm run typecheck -w packages/atlaskit-navigation && npm run build:editor && npm run build:navigation && npm run typecheck -w apps/angular-shell",
     "lint": "npm run lint -w apps/angular-shell"
   },
   "engines": {

@@ -1,0 +1,388 @@
+.atlas-side-nav {
+  --atlas-side-nav-background: #ffffff;
+  --atlas-side-nav-surface: #ffffff;
+  --atlas-side-nav-surface-hover: #f1f2f4;
+  --atlas-side-nav-surface-selected: #e9f2ff;
+  --atlas-side-nav-border: #dfe1e6;
+  --atlas-side-nav-text: #172b4d;
+  --atlas-side-nav-muted: #44546f;
+  --atlas-side-nav-subtle: #626f86;
+  --atlas-side-nav-popup-shadow: 0 16px 32px rgba(9, 30, 66, 0.18);
+  min-height: 100%;
+  background: var(--atlas-side-nav-background);
+  color: var(--atlas-side-nav-text);
+}
+
+.atlas-side-nav--dark {
+  --atlas-side-nav-background: #1d2125;
+  --atlas-side-nav-surface: transparent;
+  --atlas-side-nav-surface-hover: #282e33;
+  --atlas-side-nav-surface-selected: #1c2b41;
+  --atlas-side-nav-border: rgba(255, 255, 255, 0.08);
+  --atlas-side-nav-text: #dfe1e6;
+  --atlas-side-nav-muted: #9fadbc;
+  --atlas-side-nav-subtle: #8590a2;
+  --atlas-side-nav-popup-shadow: 0 18px 32px rgba(0, 0, 0, 0.36);
+}
+
+.atlas-side-nav [data-ds--menu--section] {
+  padding-inline: 12px;
+}
+
+.atlas-side-nav__section-heading {
+  margin: 0 0 8px;
+  color: var(--atlas-side-nav-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.atlas-side-nav__section-body {
+  display: grid;
+  gap: 2px;
+}
+
+.atlas-side-nav__section-body--loading {
+  gap: 6px;
+}
+
+.atlas-side-nav__spacer {
+  height: 12px;
+}
+
+.atlas-side-nav__group {
+  display: grid;
+  gap: 2px;
+}
+
+.atlas-side-nav__children {
+  display: grid;
+  gap: 2px;
+}
+
+.atlas-side-nav__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.atlas-side-nav__row-main {
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.atlas-side-nav__toggle-button,
+.atlas-side-nav__surface,
+.atlas-side-nav__flyout-footer-button {
+  border: 0;
+  font: inherit;
+  color: inherit;
+}
+
+.atlas-side-nav__surface,
+.atlas-side-nav__toggle-button {
+  min-height: 40px;
+  border-radius: 8px;
+  background: var(--atlas-side-nav-surface);
+}
+
+.atlas-side-nav__surface {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.atlas-side-nav__surface:hover,
+.atlas-side-nav__toggle-button:hover,
+.atlas-side-nav__flyout-footer-button:hover {
+  background: var(--atlas-side-nav-surface-hover);
+}
+
+.atlas-side-nav__surface:focus-visible,
+.atlas-side-nav__toggle-button:focus-visible,
+.atlas-side-nav__flyout-close:focus-visible,
+.atlas-side-nav__flyout-footer-button:focus-visible {
+  outline: 2px solid #579dff;
+  outline-offset: 2px;
+}
+
+.atlas-side-nav__surface--selected,
+.atlas-side-nav__surface--open {
+  background: var(--atlas-side-nav-surface-selected);
+  color: #579dff;
+}
+
+.atlas-side-nav__surface--disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+}
+
+.atlas-side-nav__surface-leading {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.atlas-side-nav__before-spacer,
+.atlas-side-nav__icon-slot,
+.atlas-side-nav__chevron-slot,
+.atlas-side-nav__container-avatar,
+.atlas-side-nav__app-tile {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+}
+
+.atlas-side-nav__container-avatar .css-1wits42,
+.atlas-side-nav__container-avatar [data-testid="avatar"] {
+  width: 20px;
+  height: 20px;
+}
+
+.atlas-side-nav__app-tile {
+  border-radius: 6px;
+  background: linear-gradient(135deg, #0c66e4, #579dff);
+  color: #ffffff;
+}
+
+.atlas-side-nav__copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  flex: 1 1 auto;
+}
+
+.atlas-side-nav__label,
+.atlas-side-nav__description {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.atlas-side-nav__label {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.atlas-side-nav__description {
+  color: var(--atlas-side-nav-muted);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.atlas-side-nav__end-cluster {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.atlas-side-nav__affixes,
+.atlas-side-nav__actions,
+.atlas-side-nav__hover-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.atlas-side-nav__hover-actions {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(2px);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.atlas-side-nav__row:hover .atlas-side-nav__hover-actions,
+.atlas-side-nav__row:focus-within .atlas-side-nav__hover-actions,
+.atlas-side-nav__group--open > .atlas-side-nav__row .atlas-side-nav__hover-actions {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+.atlas-side-nav__plain-affix {
+  color: var(--atlas-side-nav-subtle);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.atlas-side-nav__action-button {
+  min-width: 24px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 6px;
+}
+
+.atlas-side-nav__action-button [data-item-title],
+.atlas-side-nav__action-button span:not(.atlas-side-nav__sr-only) {
+  display: none;
+}
+
+.atlas-side-nav__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.atlas-side-nav__toggle-button {
+  width: 32px;
+  min-width: 32px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.atlas-side-nav__surface-chevron {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.atlas-side-nav__row--depth-1 .atlas-side-nav__surface,
+.atlas-side-nav__row--depth-1 .atlas-side-nav__toggle-button {
+  margin-left: 16px;
+}
+
+.atlas-side-nav__row--depth-2 .atlas-side-nav__surface,
+.atlas-side-nav__row--depth-2 .atlas-side-nav__toggle-button {
+  margin-left: 32px;
+}
+
+.atlas-side-nav__row--depth-3 .atlas-side-nav__surface,
+.atlas-side-nav__row--depth-3 .atlas-side-nav__toggle-button {
+  margin-left: 48px;
+}
+
+.atlas-side-nav__flyout {
+  width: min(400px, calc(100vw - 24px));
+  max-height: min(640px, calc(100vh - 32px));
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  border: 1px solid var(--atlas-side-nav-border);
+  border-radius: 12px;
+  background: var(--atlas-side-nav-background);
+  color: var(--atlas-side-nav-text);
+  box-shadow: var(--atlas-side-nav-popup-shadow);
+  overflow: hidden;
+}
+
+.atlas-side-nav__flyout-header,
+.atlas-side-nav__flyout-footer {
+  padding: 14px 16px;
+}
+
+.atlas-side-nav__flyout-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--atlas-side-nav-border);
+}
+
+.atlas-side-nav__flyout-header strong {
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.atlas-side-nav__flyout-close {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 8px;
+}
+
+.atlas-side-nav__flyout-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 40px;
+  gap: 10px;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--atlas-side-nav-border);
+}
+
+.atlas-side-nav__filter-button {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 8px;
+}
+
+.atlas-side-nav__flyout-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 8px 0;
+  display: grid;
+  gap: 12px;
+}
+
+.atlas-side-nav__flyout-section {
+  display: grid;
+  gap: 6px;
+}
+
+.atlas-side-nav__flyout-section-heading {
+  padding: 0 16px;
+  color: var(--atlas-side-nav-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.33;
+}
+
+.atlas-side-nav__flyout-section-body {
+  display: grid;
+  gap: 2px;
+  padding: 0 8px;
+}
+
+.atlas-side-nav__flyout-empty {
+  padding: 16px;
+  color: var(--atlas-side-nav-muted);
+  font-size: 14px;
+}
+
+.atlas-side-nav__flyout-footer {
+  border-top: 1px solid var(--atlas-side-nav-border);
+}
+
+.atlas-side-nav__flyout-footer-button {
+  width: 100%;
+  text-align: left;
+  justify-content: flex-start;
+  border-radius: 8px;
+}
+
+@media (max-width: 767px) {
+  .atlas-side-nav__flyout {
+    width: calc(100vw - 8px);
+    max-height: calc(100vh - 8px);
+  }
+}

@@ -13,14 +13,36 @@ import {
   ViewChild
 } from '@angular/core';
 
-type ADFDoc = {
+export type ADFDoc = {
   version: 1;
   type: 'doc';
   content?: unknown[];
   [key: string]: unknown;
 };
 
-type EditorMode = 'editor' | 'renderer';
+export type EditorMode = 'editor' | 'renderer';
+
+export type AtlasPageStatusAppearance = 'default' | 'inprogress' | 'moved' | 'new' | 'removed' | 'success';
+
+export type AtlasPageWidthMode = 'centered' | 'wide' | 'full-width';
+export type AtlasPageTitleAlignment = 'left' | 'center' | 'right';
+
+export type AtlasEditorPage = {
+  title: string;
+  authorName?: string;
+  authorInitials?: string;
+  updatedText?: string;
+  metaItems?: string[];
+  statusText?: string;
+  statusAppearance?: AtlasPageStatusAppearance;
+  widthMode?: AtlasPageWidthMode;
+  titleAlignment?: AtlasPageTitleAlignment;
+};
+
+export type AtlasEditorSubmission = {
+  page: AtlasEditorPage;
+  value: ADFDoc;
+};
 
 type AtlaskitEditorElementContract = HTMLElement & {
   value: ADFDoc;
@@ -29,12 +51,24 @@ type AtlaskitEditorElementContract = HTMLElement & {
   darkMode: boolean;
   debounceMs: number;
   placeholder: string;
+  page: AtlasEditorPage | null;
 };
 
-const EDITOR_ASSET_VERSION = '2026-05-05-1';
+const EDITOR_ASSET_VERSION = '2026-05-08-angular-bundle-1';
+const DEFAULT_EDITOR_ASSET_BASE_URL = '/assets/atlas';
+const EMPTY_DOCUMENT: ADFDoc = {
+  version: 1,
+  type: 'doc',
+  content: [
+    {
+      type: 'paragraph',
+      content: []
+    }
+  ]
+};
 
 @Component({
-  selector: 'app-atlaskit-editor-host',
+  selector: 'app-atlaskit-editor-host, app-atlaskit-editor',
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
@@ -63,15 +97,21 @@ const EDITOR_ASSET_VERSION = '2026-05-05-1';
   ]
 })
 export class AtlaskitEditorHostComponent implements AfterViewInit, OnChanges, OnDestroy {
-  @Input({ required: true }) value!: ADFDoc;
+  @Input() value: ADFDoc | null | undefined = EMPTY_DOCUMENT;
   @Input() readOnly = false;
   @Input() mode: EditorMode = 'editor';
   @Input() darkMode = false;
   @Input() debounceMs = 250;
   @Input() placeholder = 'Start writing...';
+  @Input() page: AtlasEditorPage | null = null;
+  @Input() assetBaseUrl = DEFAULT_EDITOR_ASSET_BASE_URL;
 
   @Output() readonly valueChange = new EventEmitter<ADFDoc>();
   @Output('change') readonly changeEvent = new EventEmitter<ADFDoc>();
+  @Output() readonly pageChange = new EventEmitter<AtlasEditorPage>();
+  @Output() readonly pageSubmit = new EventEmitter<AtlasEditorSubmission>();
+  @Output() readonly pageCancel = new EventEmitter<AtlasEditorSubmission>();
+  @Output() readonly editModeChange = new EventEmitter<boolean>();
   @Output() readonly ready = new EventEmitter<void>();
   @Output() readonly editorError = new EventEmitter<unknown>();
 
@@ -80,14 +120,17 @@ export class AtlaskitEditorHostComponent implements AfterViewInit, OnChanges, On
 
   private removeChangeListener?: () => void;
   private removeReadyListener?: () => void;
+  private removePageChangeListener?: () => void;
+  private removePageSubmitListener?: () => void;
+  private removePageCancelListener?: () => void;
+  private removeEditModeChangeListener?: () => void;
   private initialized = false;
 
   constructor(private readonly zone: NgZone) {}
 
   async ngAfterViewInit(): Promise<void> {
     try {
-      const { defineAtlaskitEditorElement } = await loadEditorElementModule();
-      defineAtlaskitEditorElement();
+      await loadEditorElementModule(this.assetBaseUrl);
       this.initialized = true;
       this.bindElementEvents();
       this.syncElementProperties();
@@ -103,6 +146,10 @@ export class AtlaskitEditorHostComponent implements AfterViewInit, OnChanges, On
   ngOnDestroy(): void {
     this.removeChangeListener?.();
     this.removeReadyListener?.();
+    this.removePageChangeListener?.();
+    this.removePageSubmitListener?.();
+    this.removePageCancelListener?.();
+    this.removeEditModeChangeListener?.();
   }
 
   private bindElementEvents(): void {
@@ -125,11 +172,39 @@ export class AtlaskitEditorHostComponent implements AfterViewInit, OnChanges, On
         this.zone.run(() => this.ready.emit());
       };
 
+      const handlePageChange = (event: Event): void => {
+        const detail = (event as CustomEvent<AtlasEditorPage>).detail;
+        this.zone.run(() => this.pageChange.emit(detail));
+      };
+
+      const handlePageSubmit = (event: Event): void => {
+        const detail = (event as CustomEvent<AtlasEditorSubmission>).detail;
+        this.zone.run(() => this.pageSubmit.emit(detail));
+      };
+
+      const handlePageCancel = (event: Event): void => {
+        const detail = (event as CustomEvent<AtlasEditorSubmission>).detail;
+        this.zone.run(() => this.pageCancel.emit(detail));
+      };
+
+      const handleEditModeChange = (event: Event): void => {
+        const detail = (event as CustomEvent<boolean>).detail;
+        this.zone.run(() => this.editModeChange.emit(detail));
+      };
+
       editor.addEventListener('change', handleChange);
       editor.addEventListener('ready', handleReady);
+      editor.addEventListener('page-change', handlePageChange);
+      editor.addEventListener('page-submit', handlePageSubmit);
+      editor.addEventListener('page-cancel', handlePageCancel);
+      editor.addEventListener('edit-mode-change', handleEditModeChange);
 
       this.removeChangeListener = () => editor.removeEventListener('change', handleChange);
       this.removeReadyListener = () => editor.removeEventListener('ready', handleReady);
+      this.removePageChangeListener = () => editor.removeEventListener('page-change', handlePageChange);
+      this.removePageSubmitListener = () => editor.removeEventListener('page-submit', handlePageSubmit);
+      this.removePageCancelListener = () => editor.removeEventListener('page-cancel', handlePageCancel);
+      this.removeEditModeChangeListener = () => editor.removeEventListener('edit-mode-change', handleEditModeChange);
     });
   }
 
@@ -144,49 +219,39 @@ export class AtlaskitEditorHostComponent implements AfterViewInit, OnChanges, On
       return;
     }
 
-    editor.value = this.value;
+    editor.value = normalizeHostValue(this.value);
     editor.readOnly = this.readOnly;
     editor.mode = this.mode;
     editor.darkMode = this.darkMode;
     editor.debounceMs = this.debounceMs;
     editor.placeholder = this.placeholder;
+    editor.page = this.page ? structuredClone(this.page) : null;
   }
 }
 
-async function loadEditorElementModule(): Promise<{ defineAtlaskitEditorElement: () => void }> {
-  ensureBrowserProcessShim();
-  ensureEditorStylesheet();
+function normalizeHostValue(value: ADFDoc | null | undefined): ADFDoc {
+  if (!value || typeof value !== 'object' || value.type !== 'doc') {
+    return structuredClone(EMPTY_DOCUMENT);
+  }
 
+  return {
+    ...value,
+    version: 1,
+    content: Array.isArray(value.content) ? structuredClone(value.content) : []
+  };
+}
+
+async function loadEditorElementModule(assetBaseUrl: string): Promise<void> {
   const importEditor = new Function('path', 'return import(path)') as (
     path: string
-  ) => Promise<{ defineAtlaskitEditorElement: () => void }>;
+  ) => Promise<unknown>;
 
-  return importEditor(`/assets/atlaskit-editor/atlas-atlaskit-editor.js?v=${EDITOR_ASSET_VERSION}`);
+  const normalizedBaseUrl = normalizeAssetBaseUrl(assetBaseUrl, DEFAULT_EDITOR_ASSET_BASE_URL);
+  await importEditor(`${normalizedBaseUrl}/atlas-editor.js?v=${EDITOR_ASSET_VERSION}`);
+  await customElements.whenDefined('atlas-editor');
 }
 
-function ensureBrowserProcessShim(): void {
-  const globalScope = globalThis as typeof globalThis & {
-    process?: {
-      env?: Record<string, string | undefined>;
-    };
-  };
-
-  globalScope.process ??= {};
-  globalScope.process.env ??= {};
-  globalScope.process.env['NODE_ENV'] ??= 'production';
-  globalScope.process.env['CI'] ??= 'false';
-  globalScope.process.env['REACT_SSR'] ??= 'false';
-}
-
-function ensureEditorStylesheet(): void {
-  const href = `/assets/atlaskit-editor/atlas-atlaskit-editor.css?v=${EDITOR_ASSET_VERSION}`;
-
-  if (document.querySelector(`link[href="${href}"]`)) {
-    return;
-  }
-
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = href;
-  document.head.append(link);
+function normalizeAssetBaseUrl(assetBaseUrl: string, fallback: string): string {
+  const normalized = (assetBaseUrl || fallback).trim();
+  return normalized.endsWith('/') ? normalized.slice(0, -1) : normalized;
 }

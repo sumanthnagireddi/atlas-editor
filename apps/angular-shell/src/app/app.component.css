@@ -1,218 +1,162 @@
 :host {
   display: block;
-}
-
-.confluence-page {
-  display: grid;
-  grid-template-columns: 64px minmax(0, 1fr);
   min-height: 100vh;
-  background: #f7f8fa;
-  color: #172b4d;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-.confluence-page--dark {
+.playground-shell {
+  min-height: 100vh;
+  padding: 24px;
+  box-sizing: border-box;
   background: #1d2125;
   color: #dfe1e6;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.confluence-rail {
+.playground-shell--light {
+  background: #f7f8f9;
+  color: #172b4d;
+}
+
+.playground-header {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  padding: 18px 0;
-  border-right: 1px solid #dfe1e6;
-  background: #ffffff;
-}
-
-.confluence-page--dark .confluence-rail {
-  border-right-color: #2b3138;
-  background: #161a1d;
-}
-
-.rail-button {
-  width: 36px;
-  height: 36px;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.rail-button:hover {
-  background: rgba(9, 30, 66, 0.08);
-}
-
-.confluence-page--dark .rail-button:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.rail-button--brand {
-  background: #1f6feb;
-  color: #ffffff;
-}
-
-.confluence-shell {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.confluence-topbar {
-  display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  min-height: 64px;
-  padding: 12px 18px;
-  border-bottom: 1px solid #dfe1e6;
-  background: #ffffff;
+  gap: 20px;
+  margin: 0 auto 20px;
+  width: min(1440px, 100%);
 }
 
-.confluence-page--dark .confluence-topbar {
-  border-bottom-color: #2b3138;
-  background: #1d2125;
-}
-
-.confluence-topbar__group {
-  display: flex;
-  align-items: center;
+.playground-header__copy {
+  display: grid;
   gap: 8px;
-  min-width: 0;
-  flex-wrap: wrap;
+  max-width: 760px;
 }
 
-.confluence-topbar__group--right {
+.playground-header__eyebrow {
+  color: #9fadbc;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.playground-shell--light .playground-header__eyebrow {
+  color: #44546f;
+}
+
+.playground-header h1 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.12;
+  font-weight: 600;
+}
+
+.playground-header p {
+  margin: 0;
+  color: #9fadbc;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.playground-shell--light .playground-header p {
+  color: #44546f;
+}
+
+.playground-header__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
   justify-content: flex-end;
 }
 
-.topbar-pill,
-.topbar-action,
-.topbar-close,
-.mode-switch__button {
-  border: 1px solid #c7d1db;
-  background: #ffffff;
-  color: inherit;
+.playground-stack {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 24px;
+}
+
+.playground-block {
+  display: grid;
+  gap: 16px;
+}
+
+.playground-block__copy {
+  display: grid;
+  gap: 8px;
+}
+
+.playground-block__eyebrow {
+  color: #9fadbc;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.playground-shell--light .playground-block__eyebrow {
+  color: #44546f;
+}
+
+.playground-block h2 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.playground-block p {
+  margin: 0;
+  color: #9fadbc;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.playground-shell--light .playground-block p {
+  color: #44546f;
+}
+
+.playground-button {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid #579dff;
+  border-radius: 8px;
+  background: #579dff;
+  color: #091e42;
   cursor: pointer;
   font: inherit;
-}
-
-.topbar-pill {
-  height: 36px;
-  padding: 0 12px;
-  border-radius: 8px;
-  font-size: 14px;
-}
-
-.topbar-pill--active {
-  border-color: #579dff;
-  box-shadow: inset 0 0 0 1px #579dff;
-}
-
-.topbar-pill--accent {
-  border-color: #579dff;
-  background: #e9f2ff;
-  color: #0c66e4;
-  font-weight: 600;
-}
-
-.mode-switch {
-  display: inline-flex;
-  border: 1px solid #c7d1db;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.mode-switch__button {
-  height: 36px;
-  padding: 0 14px;
-  border-width: 0;
-  border-right: 1px solid #c7d1db;
-  font-size: 14px;
-}
-
-.mode-switch__button:last-child {
-  border-right: 0;
-}
-
-.mode-switch__button--active {
-  background: #0c66e4;
-  color: #ffffff;
-}
-
-.topbar-action,
-.topbar-close {
-  height: 36px;
-  padding: 0 14px;
-  border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
 }
 
-.topbar-action--primary {
+.playground-button--ghost {
+  border-color: #3a3f46;
+  background: transparent;
+  color: inherit;
+}
+
+.playground-shell--light .playground-button {
   border-color: #0c66e4;
   background: #0c66e4;
   color: #ffffff;
 }
 
-.topbar-close {
-  border-color: transparent;
-  background: transparent;
-}
-
-.confluence-page--dark .topbar-pill,
-.confluence-page--dark .topbar-action,
-.confluence-page--dark .mode-switch,
-.confluence-page--dark .mode-switch__button {
-  border-color: #3b434c;
-  background: #1d2125;
-  color: #dfe1e6;
-}
-
-.confluence-page--dark .topbar-pill--accent {
-  border-color: #579dff;
-  background: rgba(87, 157, 255, 0.12);
-  color: #85b8ff;
-}
-
-.confluence-page--dark .mode-switch__button--active,
-.confluence-page--dark .topbar-action--primary {
-  background: #579dff;
-  color: #091e42;
-}
-
-.confluence-editor-stage {
-  min-width: 0;
-  min-height: calc(100vh - 64px);
-  background: inherit;
-}
-
-.confluence-editor-stage__host {
-  display: block;
-  min-height: calc(100vh - 64px);
+.playground-shell--light .playground-button--ghost {
+  border-color: #c7d1db;
+  background: #ffffff;
+  color: #172b4d;
 }
 
 @media (max-width: 960px) {
-  .confluence-page {
-    grid-template-columns: 1fr;
+  .playground-shell {
+    padding: 16px;
   }
 
-  .confluence-rail {
-    display: none;
-  }
-
-  .confluence-topbar {
-    align-items: flex-start;
+  .playground-header {
     flex-direction: column;
   }
 
-  .confluence-editor-stage,
-  .confluence-editor-stage__host {
-    min-height: calc(100vh - 124px);
+  .playground-header__actions {
+    justify-content: flex-start;
   }
 }

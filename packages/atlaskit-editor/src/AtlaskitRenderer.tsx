@@ -1,10 +1,13 @@
-import React, { memo, type ReactNode, useMemo } from 'react';
+import React, { memo, type ReactNode, useEffect, useMemo, useState } from 'react';
+import Button from '@atlaskit/button';
+import CopyIcon from '@atlaskit/icon/core/copy';
 import { normalizeADF } from './adf';
 import type { ADFDoc } from './types';
 
 type AtlaskitRendererProps = {
   value: ADFDoc;
   darkMode?: boolean;
+  embedded?: boolean;
 };
 
 type ADFMark = {
@@ -20,19 +23,35 @@ type ADFNode = {
   content?: ADFNode[];
 };
 
+const EDITOR_THEME_THEME_ID = 'light:light dark:dark spacing:spacing typography:typography shape:shape motion:motion';
+
 export const AtlaskitRenderer = memo(function AtlaskitRenderer({
   value,
-  darkMode = false
+  darkMode = false,
+  embedded = false
 }: AtlaskitRendererProps) {
   const document = useMemo(() => normalizeADF(value), [value]);
 
+  const content = (
+    <article className="atlas-renderer">
+      {document.content?.map((node, index) => (
+        <React.Fragment key={getNodeKey(node as ADFNode, index)}>{renderNode(node as ADFNode, index)}</React.Fragment>
+      ))}
+    </article>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
   return (
-    <div className={darkMode ? 'atlas-editor atlas-editor--dark' : 'atlas-editor'}>
-        <article className="atlas-renderer">
-        {document.content?.map((node, index) => (
-          <React.Fragment key={getNodeKey(node as ADFNode, index)}>{renderNode(node as ADFNode, index)}</React.Fragment>
-        ))}
-      </article>
+    <div
+      className={darkMode ? 'atlas-editor atlas-editor--dark' : 'atlas-editor'}
+      data-color-mode={darkMode ? 'dark' : 'light'}
+      data-subtree-theme
+      data-theme={EDITOR_THEME_THEME_ID}
+    >
+      {content}
     </div>
   );
 });
@@ -98,14 +117,18 @@ function renderNode(node: ADFNode, index: number, listDepth = 0): ReactNode {
       const textContent = flattenText(node.content);
 
       return (
-        <figure key={key} className="atlas-renderer-code-block">
-          {language ? <figcaption>{language}</figcaption> : null}
-          <pre>
-            <code>{textContent}</code>
-          </pre>
-        </figure>
+        <RendererCodeBlock key={key} code={textContent} language={language} />
       );
     }
+
+    case 'inlineCard':
+      return <RendererCard key={key} url={getCardUrl(node)} appearance="inline" />;
+
+    case 'blockCard':
+      return <RendererCard key={key} url={getCardUrl(node)} appearance="block" />;
+
+    case 'embedCard':
+      return <RendererCard key={key} url={getCardUrl(node)} appearance="embed" />;
 
     case 'panel':
       return <section key={key} className="atlas-renderer-panel">{node.content?.map((child, childIndex) => renderNode(child, childIndex))}</section>;
@@ -221,6 +244,119 @@ function flattenText(content?: ADFNode[]): string {
       return flattenText(node.content);
     }).join('') ?? ''
   );
+}
+
+function getCardUrl(node: ADFNode): string {
+  return typeof node.attrs?.['url'] === 'string' ? String(node.attrs['url']) : '';
+}
+
+const RendererCodeBlock = memo(function RendererCodeBlock({
+  code,
+  language
+}: {
+  code: string;
+  language?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setCopied(false);
+    }, 1500);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [copied]);
+
+  const handleCopy = async () => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(code);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = code;
+        textArea.setAttribute('readonly', 'true');
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.append(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+      }
+
+      setCopied(true);
+    } catch (error) {
+      console.warn('Unable to copy renderer code block', error);
+    }
+  };
+
+  return (
+    <figure className="atlas-renderer-code-block">
+      <div className="atlas-renderer-code-block__header">
+        <span className="atlas-renderer-code-block__language">{language || 'Plain text'}</span>
+        <Button
+          appearance="subtle"
+          spacing="compact"
+          iconBefore={<CopyIcon label="" />}
+          onClick={handleCopy}
+        >
+          {copied ? 'Copied' : 'Copy'}
+        </Button>
+      </div>
+      <pre>
+        <code>{code}</code>
+      </pre>
+    </figure>
+  );
+});
+
+const RendererCard = memo(function RendererCard({
+  url,
+  appearance
+}: {
+  url: string;
+  appearance: 'inline' | 'block' | 'embed';
+}) {
+  const hostname = getHostName(url);
+
+  if (!url) {
+    return null;
+  }
+
+  if (appearance === 'inline') {
+    return (
+      <a className="atlas-renderer-inline-card" href={url} target="_blank" rel="noreferrer">
+        {hostname}
+      </a>
+    );
+  }
+
+  return (
+    <a
+      className={`atlas-renderer-card atlas-renderer-card--${appearance}`}
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+    >
+      <span className="atlas-renderer-card__eyebrow">{appearance === 'embed' ? 'Embed card' : 'Smart link'}</span>
+      <span className="atlas-renderer-card__title">{hostname}</span>
+      <span className="atlas-renderer-card__url">{url}</span>
+    </a>
+  );
+});
+
+function getHostName(url: string): string {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
 }
 
 function getHeadingLevel(level: unknown): number {
