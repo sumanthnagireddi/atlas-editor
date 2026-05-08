@@ -1,7 +1,7 @@
 import { createCustomElement } from '@angular/elements';
 import { bootstrapApplication } from '@angular/platform-browser';
+import { AtlaskitEditorComponent } from '@sumanthnagireddi/atlas-angular';
 import { appConfig } from './app/app.config';
-import { AtlaskitEditorHostComponent } from './app/atlaskit-editor-host.component';
 import { AppComponent } from './app/app.component';
 
 bootstrapApplication(AppComponent, appConfig)
@@ -11,7 +11,7 @@ bootstrapApplication(AppComponent, appConfig)
     if (!customElements.get(tagName)) {
       customElements.define(
         tagName,
-        createCustomElement(AtlaskitEditorHostComponent, {
+        createCustomElement(AtlaskitEditorComponent, {
           injector: appRef.injector
         })
       );

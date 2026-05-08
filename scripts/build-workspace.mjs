@@ -219,7 +219,7 @@ const [editorRuntime, navigationRuntime] = await Promise.all([
   })
 ]);
 
-const [editorTypes, navigationTypes, bundle] = await Promise.all([
+const [editorTypes, navigationTypes] = await Promise.all([
   runStep({
     manifest,
     stepId: 'editor-types',
@@ -249,23 +249,56 @@ const [editorTypes, navigationTypes, bundle] = await Promise.all([
       'packages/atlaskit-navigation/dist/types.d.ts'
     ],
     commandArgs: ['run', 'build:navigation:types']
-  }),
-  runStep({
-    manifest,
-    stepId: 'bundle',
-    label: 'bundle',
-    inputs: [
-      'scripts/build-web-components.mjs',
-      'packages/atlaskit-editor/dist/atlas-atlaskit-editor.js',
-      'packages/atlaskit-editor/dist/atlas-atlaskit-editor.css',
-      'packages/atlaskit-navigation/dist/atlas-atlaskit-navigation.js',
-      'packages/atlaskit-navigation/dist/atlas-atlaskit-navigation.css'
-    ],
-    outputs: ['dist/web-components/atlas-editor.js', 'dist/web-components/atlas-side-nav.js'],
-    commandArgs: ['run', 'build:bundle'],
-    additionalFingerprintValues: [editorRuntime.fingerprint, navigationRuntime.fingerprint]
   })
 ]);
+
+const bundle = await runStep({
+  manifest,
+  stepId: 'bundle',
+  label: 'bundle',
+  inputs: [
+    'scripts/build-web-components.mjs',
+    'packages/atlaskit-editor/dist/atlas-atlaskit-editor.js',
+    'packages/atlaskit-editor/dist/atlas-atlaskit-editor.css',
+    'packages/atlaskit-navigation/dist/atlas-atlaskit-navigation.js',
+    'packages/atlaskit-navigation/dist/atlas-atlaskit-navigation.css'
+  ],
+  outputs: ['dist/web-components/atlas-editor.js', 'dist/web-components/atlas-side-nav.js'],
+  commandArgs: ['run', 'build:bundle'],
+  additionalFingerprintValues: [
+    editorRuntime.fingerprint,
+    navigationRuntime.fingerprint,
+    editorTypes.fingerprint,
+    navigationTypes.fingerprint
+  ]
+});
+
+const angularLibrary = await runStep({
+  manifest,
+  stepId: 'angular-library',
+  label: 'angular-library',
+  inputs: [
+    'packages/angular/src',
+    'packages/angular/package.json',
+    'packages/angular/tsconfig.json',
+    'packages/angular/tsconfig.lib.json',
+    'tsconfig.base.json',
+    'dist/web-components/atlas-editor.js',
+    'dist/web-components/atlas-side-nav.js',
+    'dist/web-components/atlaskit-editor/atlas-atlaskit-editor.js',
+    'dist/web-components/atlaskit-editor/atlas-atlaskit-editor.css',
+    'dist/web-components/atlaskit-navigation/atlas-atlaskit-navigation.js',
+    'dist/web-components/atlaskit-navigation/atlas-atlaskit-navigation.css'
+  ],
+  outputs: [
+    'packages/angular/dist/public-api.js',
+    'packages/angular/dist/public-api.d.ts',
+    'packages/angular/dist/runtime/atlas-editor.js',
+    'packages/angular/dist/runtime/atlas-side-nav.js'
+  ],
+  commandArgs: ['run', 'build', '-w', 'packages/angular'],
+  additionalFingerprintValues: [bundle.fingerprint]
+});
 
 await runStep({
   manifest,
@@ -276,6 +309,8 @@ await runStep({
     'apps/angular-shell/package.json',
     'apps/angular-shell/tsconfig.app.json',
     'angular.json',
+    'packages/angular/dist/public-api.js',
+    'packages/angular/dist/public-api.d.ts',
     'dist/web-components/atlas-editor.js',
     'dist/web-components/atlas-side-nav.js',
     'dist/web-components/atlaskit-editor/atlas-atlaskit-editor.js',
@@ -285,7 +320,12 @@ await runStep({
   ],
   outputs: ['dist/angular-shell/browser/index.html'],
   commandArgs: ['run', 'build:angular'],
-  additionalFingerprintValues: [editorTypes.fingerprint, navigationTypes.fingerprint, bundle.fingerprint]
+  additionalFingerprintValues: [
+    angularLibrary.fingerprint,
+    editorTypes.fingerprint,
+    navigationTypes.fingerprint,
+    bundle.fingerprint
+  ]
 });
 
 await saveManifest(manifest);

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, computed, signal } from '@angular/core';
-import { AtlaskitEditorHostComponent } from './atlaskit-editor-host.component';
+import { AtlaskitEditorComponent } from '@sumanthnagireddi/atlas-angular';
 
 type ADFDoc = {
   version: 1;
@@ -35,7 +35,7 @@ type AtlasEditorSubmission = {
 @Component({
   selector: 'app-editor-compat-demo',
   standalone: true,
-  imports: [AtlaskitEditorHostComponent],
+  imports: [AtlaskitEditorComponent],
   template: `
     <section class="compat-shell">
       <aside class="compat-panel">
@@ -195,7 +195,8 @@ type AtlasEditorSubmission = {
           </div>
         }
 
-          <app-atlaskit-editor-host
+          <app-atlaskit-editor
+            [assetBaseUrl]="assetBaseUrl"
             [value]="document()"
             [page]="page()"
             [readOnly]="readOnly()"
@@ -211,7 +212,7 @@ type AtlasEditorSubmission = {
             (editModeChange)="handleEditModeChange($event)"
             (ready)="handleReady()"
             (editorError)="handleError($event)">
-          </app-atlaskit-editor-host>
+          </app-atlaskit-editor>
       </div>
     </section>
   `,
@@ -466,6 +467,7 @@ export class EditorCompatDemoComponent implements OnChanges {
   readonly pageText = computed(() => JSON.stringify(this.page(), null, 2));
   readonly liveDocumentText = computed(() => JSON.stringify(this.liveDocument(), null, 2));
   readonly isEditorReady = signal(false);
+  readonly assetBaseUrl = '/assets/atlas';
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['documentInput']) {

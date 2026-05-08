@@ -1,6 +1,6 @@
 export {
-  AtlaskitEditorHostComponent,
-  AtlaskitEditorHostComponent as AtlaskitEditorComponent,
+  AtlaskitEditorComponent,
+  AtlaskitEditorComponent as AtlaskitEditorHostComponent,
   type ADFDoc,
   type AtlasEditorPage,
   type AtlasEditorSubmission,
@@ -8,11 +8,11 @@ export {
   type AtlasPageTitleAlignment,
   type AtlasPageWidthMode,
   type EditorMode
-} from './atlaskit-editor-host.component';
+} from './lib/atlaskit-editor.component';
 
 export {
-  AtlaskitSideNavHostComponent,
-  AtlaskitSideNavHostComponent as AtlaskitSideNavComponent,
+  AtlaskitSideNavComponent,
+  AtlaskitSideNavComponent as AtlaskitSideNavHostComponent,
   type AtlasSideNavAction,
   type AtlasSideNavActionDetail,
   type AtlasSideNavAffix,
@@ -33,4 +33,4 @@ export {
   type AtlasSideNavNode,
   type AtlasSideNavSection,
   type AtlasSideNavSpacer
-} from './atlaskit-side-nav-host.component';
+} from './lib/atlaskit-side-nav.component';

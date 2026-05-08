@@ -1,4 +1,4 @@
-import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -6,22 +6,97 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 const outputDir = path.join(rootDir, 'dist', 'web-components');
 
-function shouldCopyRuntimeAsset(sourcePath) {
-  return !sourcePath.endsWith('.d.ts') && !sourcePath.endsWith('.map');
+function sleep(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function copyFileWithRetry(sourcePath, destinationPath, retries = 6) {
+  for (let attempt = 0; attempt < retries; attempt += 1) {
+    try {
+      await copyFile(sourcePath, destinationPath);
+      return;
+    } catch (error) {
+      if (error?.code !== 'EPERM' || attempt === retries - 1) {
+        throw error;
+      }
+
+      await sleep(150 * (attempt + 1));
+    }
+  }
+}
+
+function extractRelativeRuntimeImports(sourceCode) {
+  const matches = new Set();
+  const patterns = [
+    /import\s+["'](\.\/[^"']+\.(?:js|css))["']/g,
+    /from\s+["'](\.\/[^"']+\.(?:js|css))["']/g,
+    /import\(\s*["'](\.\/[^"']+\.(?:js|css))["']\s*\)/g,
+    /new URL\(\s*["'](\.\/[^"']+\.(?:js|css))["']/g
+  ];
+
+  for (const pattern of patterns) {
+    for (const match of sourceCode.matchAll(pattern)) {
+      matches.add(match[1]);
+    }
+  }
+
+  return [...matches];
+}
+
+async function collectRuntimeGraph(sourceDir, entryFileNames) {
+  const filesToCopy = new Set(entryFileNames);
+  const pendingJsFiles = entryFileNames.filter((fileName) => fileName.endsWith('.js'));
+
+  while (pendingJsFiles.length > 0) {
+    const currentFile = pendingJsFiles.pop();
+    const sourcePath = path.join(sourceDir, currentFile);
+    const sourceCode = await readFile(sourcePath, 'utf8');
+    const relativeImports = extractRelativeRuntimeImports(sourceCode);
+
+    for (const relativeImport of relativeImports) {
+      const normalizedImport = path.normalize(relativeImport.replace(/^\.\//, ''));
+
+      if (filesToCopy.has(normalizedImport)) {
+        continue;
+      }
+
+      filesToCopy.add(normalizedImport);
+
+      if (normalizedImport.endsWith('.js')) {
+        pendingJsFiles.push(normalizedImport);
+      }
+    }
+  }
+
+  return [...filesToCopy];
+}
+
+async function copyRuntimeGraph(sourceDir, destinationDir, entryFileNames) {
+  await mkdir(destinationDir, { recursive: true });
+  const runtimeFiles = await collectRuntimeGraph(sourceDir, entryFileNames);
+
+  for (const relativeFilePath of runtimeFiles) {
+    const sourcePath = path.join(sourceDir, relativeFilePath);
+    const destinationPath = path.join(destinationDir, relativeFilePath);
+    await mkdir(path.dirname(destinationPath), { recursive: true });
+    await copyFileWithRetry(sourcePath, destinationPath);
+  }
 }
 
 await rm(outputDir, { recursive: true, force: true });
 await mkdir(outputDir, { recursive: true });
 
-await cp(path.join(rootDir, 'packages', 'atlaskit-editor', 'dist'), path.join(outputDir, 'atlaskit-editor'), {
-  recursive: true,
-  filter: shouldCopyRuntimeAsset
-});
+await copyRuntimeGraph(
+  path.join(rootDir, 'packages', 'atlaskit-editor', 'dist'),
+  path.join(outputDir, 'atlaskit-editor'),
+  ['atlas-atlaskit-editor.js', 'atlas-atlaskit-editor.css']
+);
 
-await cp(path.join(rootDir, 'packages', 'atlaskit-navigation', 'dist'), path.join(outputDir, 'atlaskit-navigation'), {
-  recursive: true,
-  filter: shouldCopyRuntimeAsset
-});
+await copyRuntimeGraph(
+  path.join(rootDir, 'packages', 'atlaskit-navigation', 'dist'),
+  path.join(outputDir, 'atlaskit-navigation'),
+  ['atlas-atlaskit-navigation.js', 'atlas-atlaskit-navigation.css']
+);
 
 const editorLoaderSource = `const baseUrl = new URL('.', import.meta.url);
 

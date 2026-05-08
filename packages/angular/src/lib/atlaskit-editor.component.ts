@@ -54,8 +54,8 @@ type AtlaskitEditorElementContract = HTMLElement & {
   page: AtlasEditorPage | null;
 };
 
-const EDITOR_ASSET_VERSION = '2026-05-08-angular-bundle-1';
-const DEFAULT_EDITOR_ASSET_BASE_URL = '/assets/atlas';
+const EDITOR_ASSET_VERSION = '2026-05-08-angular-lib-1';
+const LOCAL_EDITOR_MODULE_URL = new URL('../runtime/atlas-editor.js', import.meta.url).href;
 const EMPTY_DOCUMENT: ADFDoc = {
   version: 1,
   type: 'doc',
@@ -96,7 +96,7 @@ const EMPTY_DOCUMENT: ADFDoc = {
     `
   ]
 })
-export class AtlaskitEditorHostComponent implements AfterViewInit, OnChanges, OnDestroy {
+export class AtlaskitEditorComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() value: ADFDoc | null | undefined = EMPTY_DOCUMENT;
   @Input() readOnly = false;
   @Input() mode: EditorMode = 'editor';
@@ -104,7 +104,7 @@ export class AtlaskitEditorHostComponent implements AfterViewInit, OnChanges, On
   @Input() debounceMs = 250;
   @Input() placeholder = 'Start writing...';
   @Input() page: AtlasEditorPage | null = null;
-  @Input() assetBaseUrl = DEFAULT_EDITOR_ASSET_BASE_URL;
+  @Input() assetBaseUrl: string | null = null;
 
   @Output() readonly valueChange = new EventEmitter<ADFDoc>();
   @Output('change') readonly changeEvent = new EventEmitter<ADFDoc>();
@@ -229,6 +229,8 @@ export class AtlaskitEditorHostComponent implements AfterViewInit, OnChanges, On
   }
 }
 
+export { AtlaskitEditorComponent as AtlaskitEditorHostComponent };
+
 function normalizeHostValue(value: ADFDoc | null | undefined): ADFDoc {
   if (!value || typeof value !== 'object' || value.type !== 'doc') {
     return structuredClone(EMPTY_DOCUMENT);
@@ -241,17 +243,28 @@ function normalizeHostValue(value: ADFDoc | null | undefined): ADFDoc {
   };
 }
 
-async function loadEditorElementModule(assetBaseUrl: string): Promise<void> {
+async function loadEditorElementModule(assetBaseUrl: string | null | undefined): Promise<void> {
   const importEditor = new Function('path', 'return import(path)') as (
     path: string
   ) => Promise<unknown>;
 
-  const normalizedBaseUrl = normalizeAssetBaseUrl(assetBaseUrl, DEFAULT_EDITOR_ASSET_BASE_URL);
-  await importEditor(`${normalizedBaseUrl}/atlas-editor.js?v=${EDITOR_ASSET_VERSION}`);
+  const normalizedBaseUrl = normalizeAssetBaseUrl(assetBaseUrl);
+
+  if (normalizedBaseUrl) {
+    await importEditor(`${normalizedBaseUrl}/atlas-editor.js?v=${EDITOR_ASSET_VERSION}`);
+  } else {
+    await importEditor(LOCAL_EDITOR_MODULE_URL);
+  }
+
   await customElements.whenDefined('atlas-editor');
 }
 
-function normalizeAssetBaseUrl(assetBaseUrl: string, fallback: string): string {
-  const normalized = (assetBaseUrl || fallback).trim();
+function normalizeAssetBaseUrl(assetBaseUrl: string | null | undefined): string | null {
+  const normalized = (assetBaseUrl ?? '').trim();
+
+  if (!normalized) {
+    return null;
+  }
+
   return normalized.endsWith('/') ? normalized.slice(0, -1) : normalized;
 }

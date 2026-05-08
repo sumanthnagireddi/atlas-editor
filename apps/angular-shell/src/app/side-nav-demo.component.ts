@@ -1,5 +1,5 @@
 import { Component, computed, signal } from '@angular/core';
-import { AtlaskitSideNavHostComponent } from './atlaskit-side-nav-host.component';
+import { AtlaskitSideNavComponent } from '@sumanthnagireddi/atlas-angular';
 
 type AtlasSideNavIconKey =
   | 'home'
@@ -144,7 +144,7 @@ type AtlasSideNavExpandDetail = {
 @Component({
   selector: 'app-side-nav-demo',
   standalone: true,
-  imports: [AtlaskitSideNavHostComponent],
+  imports: [AtlaskitSideNavComponent],
   template: `
     <section class="nav-demo">
       <aside class="nav-demo__panel">
@@ -197,7 +197,8 @@ type AtlasSideNavExpandDetail = {
 
       <div class="nav-demo__stage">
         <div class="nav-demo__frame">
-          <app-atlaskit-side-nav-host
+          <app-atlaskit-side-nav
+            [assetBaseUrl]="assetBaseUrl"
             [model]="model()"
             [darkMode]="darkMode()"
             (ready)="handleReady()"
@@ -205,7 +206,7 @@ type AtlasSideNavExpandDetail = {
             (actionInvoke)="handleActionInvoke($event)"
             (expandChange)="handleExpandChange($event)"
             (flyoutOpenChange)="handleFlyoutOpenChange($event)">
-          </app-atlaskit-side-nav-host>
+          </app-atlaskit-side-nav>
         </div>
       </div>
     </section>
@@ -339,6 +340,7 @@ type AtlasSideNavExpandDetail = {
   ]
 })
 export class SideNavDemoComponent {
+  readonly assetBaseUrl = '/assets/atlas';
   readonly darkMode = signal(true);
   readonly isLoading = signal(false);
   readonly model = signal<AtlasSideNavModel>(createSideNavModel());

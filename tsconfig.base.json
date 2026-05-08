@@ -2,6 +2,11 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": ".",
+    "paths": {
+      "@sumanthnagireddi/atlas-angular": [
+        "packages/angular/src/public-api.ts"
+      ]
+    },
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "strict": true,

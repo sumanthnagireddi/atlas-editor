@@ -1,0 +1,51 @@
+{
+  "name": "@sumanthnagireddi/atlas-angular",
+  "version": "1.0.0",
+  "private": false,
+  "type": "module",
+  "description": "Angular wrappers for the Atlas editor and side navigation runtimes.",
+  "keywords": [
+    "angular",
+    "atlaskit",
+    "editor",
+    "side-navigation",
+    "web-components"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sumanthnagireddi/atlas-editor.git",
+    "directory": "packages/angular"
+  },
+  "homepage": "https://github.com/sumanthnagireddi/atlas-editor#readme",
+  "bugs": {
+    "url": "https://github.com/sumanthnagireddi/atlas-editor/issues"
+  },
+  "main": "./dist/public-api.js",
+  "module": "./dist/public-api.js",
+  "types": "./dist/public-api.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/public-api.d.ts",
+      "import": "./dist/public-api.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "node ../../scripts/build-angular-library.mjs",
+    "build:angular:compile": "node ../../scripts/run-ngc.mjs -p tsconfig.lib.json && node ../../scripts/copy-angular-runtime.mjs",
+    "prepack": "npm run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "@angular/common": ">=18.2.14 <20.0.0",
+    "@angular/core": ">=18.2.14 <20.0.0",
+    "rxjs": ">=7.8.0 <8.0.0",
+    "zone.js": ">=0.15.0 <0.16.0"
+  }
+}

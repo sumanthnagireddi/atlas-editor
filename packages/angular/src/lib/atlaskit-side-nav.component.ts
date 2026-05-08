@@ -159,8 +159,8 @@ type AtlaskitSideNavElementContract = HTMLElement & {
   darkMode: boolean;
 };
 
-const NAVIGATION_ASSET_VERSION = '2026-05-08-angular-bundle-1';
-const DEFAULT_NAVIGATION_ASSET_BASE_URL = '/assets/atlas';
+const NAVIGATION_ASSET_VERSION = '2026-05-08-angular-lib-1';
+const LOCAL_NAVIGATION_MODULE_URL = new URL('../runtime/atlas-side-nav.js', import.meta.url).href;
 const EMPTY_MODEL: AtlasSideNavModel = {
   label: 'Atlas side navigation',
   header: {
@@ -193,10 +193,10 @@ const EMPTY_MODEL: AtlasSideNavModel = {
     `
   ]
 })
-export class AtlaskitSideNavHostComponent implements AfterViewInit, OnChanges, DoCheck, OnDestroy {
+export class AtlaskitSideNavComponent implements AfterViewInit, OnChanges, DoCheck, OnDestroy {
   @Input() model: AtlasSideNavModel | null | undefined = EMPTY_MODEL;
   @Input() darkMode = true;
-  @Input() assetBaseUrl = DEFAULT_NAVIGATION_ASSET_BASE_URL;
+  @Input() assetBaseUrl: string | null = null;
 
   @Output() readonly itemInvoke = new EventEmitter<AtlasSideNavInvokeDetail>();
   @Output() readonly actionInvoke = new EventEmitter<AtlasSideNavActionDetail>();
@@ -324,6 +324,8 @@ export class AtlaskitSideNavHostComponent implements AfterViewInit, OnChanges, D
   }
 }
 
+export { AtlaskitSideNavComponent as AtlaskitSideNavHostComponent };
+
 function normalizeModel(model: AtlasSideNavModel | null | undefined): AtlasSideNavModel {
   if (!model || typeof model !== 'object') {
     return structuredClone(EMPTY_MODEL);
@@ -338,17 +340,28 @@ function normalizeModel(model: AtlasSideNavModel | null | undefined): AtlasSideN
   });
 }
 
-async function loadNavigationElementModule(assetBaseUrl: string): Promise<void> {
+async function loadNavigationElementModule(assetBaseUrl: string | null | undefined): Promise<void> {
   const importNavigation = new Function('path', 'return import(path)') as (
     path: string
   ) => Promise<unknown>;
 
-  const normalizedBaseUrl = normalizeAssetBaseUrl(assetBaseUrl, DEFAULT_NAVIGATION_ASSET_BASE_URL);
-  await importNavigation(`${normalizedBaseUrl}/atlas-side-nav.js?v=${NAVIGATION_ASSET_VERSION}`);
+  const normalizedBaseUrl = normalizeAssetBaseUrl(assetBaseUrl);
+
+  if (normalizedBaseUrl) {
+    await importNavigation(`${normalizedBaseUrl}/atlas-side-nav.js?v=${NAVIGATION_ASSET_VERSION}`);
+  } else {
+    await importNavigation(LOCAL_NAVIGATION_MODULE_URL);
+  }
+
   await customElements.whenDefined('atlas-side-nav');
 }
 
-function normalizeAssetBaseUrl(assetBaseUrl: string, fallback: string): string {
-  const normalized = (assetBaseUrl || fallback).trim();
+function normalizeAssetBaseUrl(assetBaseUrl: string | null | undefined): string | null {
+  const normalized = (assetBaseUrl ?? '').trim();
+
+  if (!normalized) {
+    return null;
+  }
+
   return normalized.endsWith('/') ? normalized.slice(0, -1) : normalized;
 }
