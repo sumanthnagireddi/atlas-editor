@@ -23,14 +23,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@atlaskit/app-provider": "^3.4.2",
+    "@atlaskit/app-provider": "^4.3.0",
     "@atlaskit/avatar": "^25.14.1",
     "@atlaskit/badge": "^18.2.2",
     "@atlaskit/button": "^23.11.3",
     "@atlaskit/dropdown-menu": "^16.8.9",
     "@atlaskit/icon": "^28.3.0",
     "@atlaskit/lozenge": "^13.8.0",
-    "@atlaskit/popup": "^5.1.9",
+    "@atlaskit/popup": "^4.17.0",
     "@atlaskit/primitives": "^19.0.0",
     "@atlaskit/side-navigation": "^11.2.1",
     "@atlaskit/spinner": "^19.1.2",
